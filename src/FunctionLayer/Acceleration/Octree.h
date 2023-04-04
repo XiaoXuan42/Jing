@@ -8,7 +8,7 @@ public:
                             float *v) const override;
 protected:
   struct OctreeNode;
-    static constexpr int ocLeafMaxSize = 64;
+    static constexpr int ocLeafMaxSize = 24;
     OctreeNode *
   recursiveBuild(const AABB &aabb, const std::vector<int> &primIdxBuffer);
 

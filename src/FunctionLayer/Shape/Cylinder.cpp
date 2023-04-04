@@ -80,10 +80,13 @@ void Cylinder::fillIntersection(float distance, int primID, float u, float v, In
     intersection->position = transform.toWorld(position);
 
     Vector3f normal = {float(cos(ang)), float(sin(ang)), 0.0f};
+    /*
     if (primID > 0) {
         normal = -normal;
     }
-    intersection->normal = normal;
+    */
+    // FIXME: inside or outside?
+    intersection->normal = transform.toWorld(normal);
 
     Vector3f tangent{1.f, 0.f, .0f};
     Vector3f bitangent;

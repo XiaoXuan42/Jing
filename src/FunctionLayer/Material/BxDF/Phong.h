@@ -1,6 +1,7 @@
 #pragma once
 #include "BSDF.h"
 #include "Warp.h"
+#include <math.h>
 
 class PhongReflection : public BSDF {
 public:
@@ -10,7 +11,6 @@ public:
       : BSDF(_normal, _tangent, _bitangent), kd(_kd), ks(_ks), p(_p) {}
 
   virtual Spectrum f(const Vector3f &wo, const Vector3f &wi) const override {
-    // TODO
     // 1. 转换坐标系到局部坐标
     // 2. 根据公式计算 K_d, K_s
     // 3. return K_d + K_s
@@ -18,6 +18,12 @@ public:
     // Phong模型brdf实现不包括环境光项；其I/r^2项包含在光源采样步骤中，因此brdf中不包含I/r^2。
     Spectrum diffuse{0.f};
     Spectrum specular{0.f};
+    Vector3f woLocal = toLocal(wo), wiLocal = toLocal(wi);
+    diffuse = std::max(wiLocal[1], 0.0f) * kd;
+    Vector3f wrLocal = 2 * wiLocal[1] * Vector3f{0., 1., 0.} - wiLocal;
+    if (wrLocal[1] > 0) {
+      specular = std::max(powf(dot(wrLocal, woLocal), p), 0.0f) * ks;
+    }
     return diffuse + specular;
   }
 

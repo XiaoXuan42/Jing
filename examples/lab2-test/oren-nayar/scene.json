@@ -1,6 +1,6 @@
 {
   "output" : {
-    "filename" : "oren-nayar.hdr"
+    "filename" : "oren-nayar.png"
   },
   "sampler" : {
     "type" : "independent",
@@ -107,7 +107,7 @@
     "lights" : [
       {
           "type" : "areaLight",
-          "energy" : [50, 50, 50],
+          "energy" : [25, 25, 25],
           "shape" : {
             "type" : "parallelogram",
             "base" : [0, 3, 4],

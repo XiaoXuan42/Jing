@@ -44,7 +44,7 @@ bool Disk::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     ray.tFar = t;
 
     *u = ang / phiMax;
-    *v = r;
+    *v = (r - innerRadius) / (radius - innerRadius);
     return true;
 }
 
@@ -61,8 +61,9 @@ void Disk::fillIntersection(float distance, int primID, float u, float v, Inters
 
     Point3f position;
     double ang = phiMax * u;
-    position[0] = cos(ang) * v;
-    position[1] = sin(ang) * v;
+    double r = v * (radius - innerRadius) + innerRadius;
+    position[0] = cos(ang) * r;
+    position[1] = sin(ang) * r;
     intersection->position = transform.toWorld(position);
 
     Vector3f normal{0.f, 0.f, 1.f};

@@ -27,7 +27,8 @@ public:
       cur_eta = 1.0f / eta;
     }
     float cos_theta_o = woLocal[1];
-    float Fr = getFr(cur_eta, cos_theta_o);
+    float cos_theta_i = wiLocal[1];
+    float Fr = getFr(cur_eta, std::abs(cos_theta_i));
     auto whLocal = (woLocal + wiLocal) / 2.0f;
     float D = ndf->getD(whLocal, alpha);
     float G = ndf->getG(woLocal, wiLocal, alpha);

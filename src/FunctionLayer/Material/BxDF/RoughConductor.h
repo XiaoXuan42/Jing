@@ -23,10 +23,11 @@ public:
     wiLocal = normalize(wiLocal);
     auto whLocal = (woLocal + wiLocal) / 2.0f;
     float cos_theta_o = woLocal[1];
+    float cos_theta_i = wiLocal[1];
 
     float D = ndf->getD(whLocal, alpha);
     float G = ndf->getG(woLocal, wiLocal, alpha);
-    auto Fr = getFr(cos_theta_o);
+    auto Fr = getFr(std::abs(cos_theta_i));
     return albedo * D * G * Fr / (4 * cos_theta_o);
   }
 

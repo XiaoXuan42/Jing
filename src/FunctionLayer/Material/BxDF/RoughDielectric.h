@@ -1,6 +1,7 @@
 #pragma once
 #include "../NDF/NDF.h"
 #include "BSDF.h"
+#include "CoreLayer/Math/Geometry.h"
 #include "Warp.h"
 
 class RoughDielectricBSDF : public BSDF {
@@ -18,7 +19,19 @@ public:
     // tips:
     // 不考虑多重介质，如果光线从真空射入介质，其eta即配置中填写的eta；
     // 如果光线从介质射出，则eta = 1/eta
-    return {0.f};
+    auto woLocal = toLocal(wo), wiLocal = toLocal(wi);
+    woLocal = normalize(woLocal);
+    wiLocal = normalize(wiLocal);
+    float cur_eta = eta;
+    if (wiLocal[1] < 0) {
+      cur_eta = 1.0f / eta;
+    }
+    float cos_theta_o = woLocal[1];
+    float Fr = getFr(cur_eta, cos_theta_o);
+    auto whLocal = (woLocal + wiLocal) / 2.0f;
+    float D = ndf->getD(whLocal, alpha);
+    float G = ndf->getG(woLocal, wiLocal, alpha);
+    return albedo * D * G * Fr / (4 * cos_theta_o);
   }
 
   virtual BSDFSampleResult sample(const Vector3f &wo,

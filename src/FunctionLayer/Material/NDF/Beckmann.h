@@ -28,7 +28,7 @@ public:
     float theta = acos(w_normalize[1]);
     // 各向同性
     // FIXME: 实现各项异性
-    float a = 1.0f / (alpha[0] * std::tan(theta));
+    float a = 1.0f / (alpha[0] * std::abs(std::tan(theta)));
     if (a < 1.6) {
       return (3.535 * a + 2.181 * a * a) / (1 + 2.276 * a + 2.577 * a * a);
     } else {

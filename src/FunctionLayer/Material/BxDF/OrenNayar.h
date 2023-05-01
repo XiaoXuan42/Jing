@@ -1,5 +1,6 @@
 #pragma once
 #include "BSDF.h"
+#include "CoreLayer/Math/Geometry.h"
 #include "Warp.h"
 #include <cmath>
 #include <cstdio>
@@ -16,6 +17,8 @@ public:
     // \cos(\phi_i-\phi_o)
     // 3. return Oren-Nayar brdf
     Vector3f woLocal = toLocal(wo), wiLocal = toLocal(wi);
+    woLocal = normalize(woLocal);
+    wiLocal = normalize(wiLocal);
     float theta_o = acos(woLocal[1]), theta_i = acos(wiLocal[1]);
     float alpha = std::max(theta_o, theta_i), beta = std::min(theta_o, theta_i);
     float A = 1 - sigma * sigma / (2 * (sigma * sigma + 0.33));

@@ -19,6 +19,8 @@ public:
     Spectrum diffuse{0.f};
     Spectrum specular{0.f};
     Vector3f woLocal = toLocal(wo), wiLocal = toLocal(wi);
+    woLocal = normalize(woLocal);
+    wiLocal = normalize(wiLocal);
     diffuse = std::max(wiLocal[1], 0.0f) * kd;
     Vector3f wrLocal = 2 * wiLocal[1] * Vector3f{0., 1., 0.} - wiLocal;
     if (wrLocal[1] > 0) {

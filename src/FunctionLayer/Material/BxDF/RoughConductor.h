@@ -18,9 +18,6 @@ public:
     // 3. return albedo * D * G * Fr / (4 * \cos\theta_o);
     // tips: brdf
     // 中分母的\cos\theta_i项被渲染方程中的cos项消去，因此分母只有4*\cos\theta_o
-    if (wo[1] < 0) {
-      printf("bad!\n");
-    }
     auto woLocal = toLocal(wo), wiLocal = toLocal(wi);
     woLocal = normalize(woLocal);
     wiLocal = normalize(wiLocal);

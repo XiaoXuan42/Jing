@@ -12,7 +12,6 @@ public:
         eta(_eta), ndf(_ndf) {}
 
   virtual Spectrum f(const Vector3f &wo, const Vector3f &wi) const override {
-    // TODO
     // 1. 转换坐标系到局部坐标
     // 2. 根据公式计算 Fr, D, G
     // 3. return albedo * D * G * Fr / (4 * \cos\theta_o);

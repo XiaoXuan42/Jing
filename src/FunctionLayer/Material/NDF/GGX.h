@@ -1,6 +1,8 @@
 #pragma once
 
+#include "CoreLayer/Math/Geometry.h"
 #include "NDF.h"
+#include <cmath>
 
 class GGXDistribution : public NDF {
 public:
@@ -8,18 +10,28 @@ public:
   virtual ~GGXDistribution() noexcept = default;
   virtual float getD(const Vector3f &whLocal,
                      const Vector2f &alpha) const noexcept override {
-    // TODO
     // 根据公式即可
-    return 0.f;
+    float a = alpha[0];
+    auto w_normalize = normalize(whLocal);
+    float theta = std::acos(w_normalize[1]);
+    float div1 = std::pow(std::cos(theta), 4);
+    float div2 = std::pow(a * a + std::tan(theta) * std::tan(theta), 2);
+    return a * a / (M_PI * div1 * div2);
   }
   // tips:
   // float getG1(...) {}
+
+  float getG1(const Vector3f &w, const Vector2f &alpha) const noexcept {
+    auto w_normalize = normalize(w);
+    float theta = std::acos(w_normalize[1]);
+    float a = alpha[0];
+    return 2.0f / (1.0 + std::sqrt(1 + a * a * std::tan(theta) * std::tan(theta)));
+  }
   virtual float getG(const Vector3f &woLocal, const Vector3f &wiLocal,
                      const Vector2f &alpha) const noexcept override {
-    // TODO
     // 根据公式即可
     // tips: return getG1(wo) * getG1(wi);
-    return 0.f;
+    return getG1(wiLocal, alpha) * getG1(woLocal, alpha);
   }
   virtual float pdf(const Vector3f &woLocal, const Vector3f &whLocal,
                     const Vector2f &alpha) const noexcept override {

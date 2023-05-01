@@ -1,6 +1,7 @@
 #pragma once
 #include "../NDF/NDF.h"
 #include "BSDF.h"
+#include "CoreLayer/Math/Geometry.h"
 #include "Warp.h"
 
 class RoughConductorBSDF : public BSDF {
@@ -12,13 +13,24 @@ public:
         eta(_eta), k(_k), ndf(_ndf) {}
 
   virtual Spectrum f(const Vector3f &wo, const Vector3f &wi) const override {
-    // TODO
     // 1. 转换坐标系到局部坐标
     // 2. 根据公式计算 Fr, D, G
     // 3. return albedo * D * G * Fr / (4 * \cos\theta_o);
     // tips: brdf
     // 中分母的\cos\theta_i项被渲染方程中的cos项消去，因此分母只有4*\cos\theta_o
-    return {0.f};
+    if (wo[1] < 0) {
+      printf("bad!\n");
+    }
+    auto woLocal = toLocal(wo), wiLocal = toLocal(wi);
+    woLocal = normalize(woLocal);
+    wiLocal = normalize(wiLocal);
+    auto whLocal = (woLocal + wiLocal) / 2.0f;
+    float cos_theta_o = woLocal[1];
+
+    float D = ndf->getD(whLocal, alpha);
+    float G = ndf->getG(woLocal, wiLocal, alpha);
+    auto Fr = getFr(cos_theta_o);
+    return albedo * D * G * Fr / (4 * cos_theta_o);
   }
 
   virtual BSDFSampleResult sample(const Vector3f &wo,

@@ -25,14 +25,16 @@ public:
     float B = 0.45 * sigma * sigma / (sigma * sigma + 0.09);
     float phi_i = atan2(wiLocal[0], wiLocal[2]), phi_o = atan2(woLocal[0], woLocal[2]);
     float coeff = 1.0 / M_PI * (A + B * std::max(0.0f, std::cos(phi_i - phi_o)) * std::sin(alpha) * std::tan(beta));
-    return coeff * albedo;
+    return coeff * albedo * wiLocal[1];
   }
 
   virtual BSDFSampleResult sample(const Vector3f &wo,
                                   const Vector2f &sample) const override {
-    Vector3f wi = squareToCosineHemisphere(sample);
-    float pdf = squareToCosineHemispherePdf(wi);
-    return {albedo, toWorld(wi), pdf, BSDFType::Diffuse};
+    Vector3f wiLocal = squareToCosineHemisphere(sample);
+    auto wi = toWorld(wiLocal);
+    float pdf = squareToCosineHemispherePdf(wiLocal);
+    auto bsdf_f = f(wo, wi);
+    return {bsdf_f / pdf, wi, pdf, BSDFType::Diffuse};
   }
 
 private:

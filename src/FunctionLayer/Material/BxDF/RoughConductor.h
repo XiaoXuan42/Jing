@@ -22,13 +22,13 @@ public:
     woLocal = normalize(woLocal);
     wiLocal = normalize(wiLocal);
     auto whLocal = (woLocal + wiLocal) / 2.0f;
-    float cos_theta_o = woLocal[1];
-    float cos_theta_i = wiLocal[1];
+    whLocal = normalize(whLocal);
+    float cos_theta_i = dot(whLocal, wiLocal);
 
     float D = ndf->getD(whLocal, alpha);
     float G = ndf->getG(woLocal, wiLocal, alpha);
     auto Fr = getFr(std::abs(cos_theta_i));
-    return albedo * D * G * Fr / (4 * cos_theta_o);
+    return albedo * D * G * Fr / (4 * woLocal[1]);
   }
 
   virtual BSDFSampleResult sample(const Vector3f &wo,

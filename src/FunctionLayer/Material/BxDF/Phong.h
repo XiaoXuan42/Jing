@@ -24,7 +24,10 @@ public:
     diffuse = std::max(wiLocal[1], 0.0f) * kd;
     Vector3f wrLocal = 2 * wiLocal[1] * Vector3f{0., 1., 0.} - wiLocal;
     if (wrLocal[1] > 0) {
-      specular = std::max(powf(dot(wrLocal, woLocal), p), 0.0f) * ks;
+      float cos_theta = dot(wrLocal, woLocal);
+      if (cos_theta > 0) {
+        specular = powf(cos_theta, p) * ks;
+      }
     }
     return diffuse + specular;
   }

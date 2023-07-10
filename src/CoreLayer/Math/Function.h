@@ -1,14 +1,17 @@
 #pragma once
 
 //* 给定t以及范围[lower, upper]，将t的值限定在[lower, upper]内
-template <typename T> T clamp(T t, T lower, T upper) {
-  t = (t < lower) ? lower : (t > upper ? upper : t);
-  return t;
+#include <cmath>
+
+template <typename T>
+T clamp(T t, T lower, T upper) {
+    t = (t < lower) ? lower : (t > upper ? upper : t);
+    return t;
 }
 
 //* 求解一元二次方程组
 inline bool Quadratic(float A, float B, float C, float *t0, float *t1) {
-    float discrim = B * B - 4 *  A  * C;
+    float discrim = B * B - 4 * A * C;
     if (discrim < 0.) return false;
     float rootDiscrim = std::sqrt(discrim);
     float q;

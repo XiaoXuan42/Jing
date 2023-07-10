@@ -1,6 +1,7 @@
 #include "Cone.h"
-#include "CoreLayer/Math/Geometry.h"
+
 #include "CoreLayer/Math/Function.h"
+#include "CoreLayer/Math/Geometry.h"
 #include "FastMath/VecMat.h"
 #include "ResourceLayer/Factory.h"
 
@@ -13,7 +14,8 @@ bool Cone::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     //* Write your code here.
 
     vecmat::vec4f o = {ray.origin[0], ray.origin[1], ray.origin[2], 1.0};
-    vecmat::vec4f d = {ray.direction[0], ray.direction[1], ray.direction[2], 0.0};
+    vecmat::vec4f d = {ray.direction[0], ray.direction[1], ray.direction[2],
+                       0.0};
     o = transform.invRotate * transform.invTranslate * o;
     d = transform.invRotate * transform.invTranslate * d;
     o /= o[3];
@@ -24,8 +26,10 @@ bool Cone::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     float A = (costheta2 - direction[2] * direction[2]);
     Point3f hat = {0, 0, height};
     Vector3f o_d = origin - hat;
-    float B = 2 * (costheta2 * dot(o_d, direction) - (origin[2] - height) * direction[2]);
-    float C = costheta2 * dot(o_d, o_d) - (origin[2] - height) * (origin[2] - height);
+    float B = 2 * (costheta2 * dot(o_d, direction) -
+                   (origin[2] - height) * direction[2]);
+    float C =
+        costheta2 * dot(o_d, o_d) - (origin[2] - height) * (origin[2] - height);
 
     float tnear, tfar;
     if (!Quadratic(A, B, C, &tnear, &tfar)) {
@@ -61,7 +65,8 @@ bool Cone::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     return test_set(tfar, 1);
 }
 
-void Cone::fillIntersection(float distance, int primID, float u, float v, Intersection *intersection) const {
+void Cone::fillIntersection(float distance, int primID, float u, float v,
+                            Intersection *intersection) const {
     /// ----------------------------------------------------
     //* 填充圆锥相交信息中的法线以及相交位置信息
     //* 1.法线可以先计算出局部空间的法线，然后变换到世界空间
@@ -82,7 +87,9 @@ void Cone::fillIntersection(float distance, int primID, float u, float v, Inters
     position[2] = h;
     intersection->position = transform.toWorld(position);
 
-    Vector3f normal{position[0], position[1], radius * radius / (height * height) * (height - position[2])};
+    Vector3f normal{
+        position[0], position[1],
+        radius * radius / (height * height) * (height - position[2])};
     normal = normal / normal.length();
     // FIXME: inside or outside?
     intersection->normal = transform.toWorld(normal);
@@ -98,20 +105,20 @@ void Cone::fillIntersection(float distance, int primID, float u, float v, Inters
     intersection->bitangent = bitangent;
 }
 
-void Cone::uniformSampleOnSurface(Vector2f sample, Intersection *result, float *pdf) const {
-
-}
+void Cone::uniformSampleOnSurface(Vector2f sample, Intersection *result,
+                                  float *pdf) const {}
 
 Cone::Cone(const Json &json) : Shape(json) {
     radius = fetchOptional(json, "radius", 1.f);
     height = fetchOptional(json, "height", 1.f);
     phiMax = fetchOptional(json, "phi_max", 2 * PI);
     float tanTheta = radius / height;
-    cosTheta = sqrt(1/(1+tanTheta * tanTheta));
-    //theta = fetchOptional(json,)
-    AABB localAABB = AABB(Point3f(-radius,-radius,0),Point3f(radius,radius,height));
+    cosTheta = sqrt(1 / (1 + tanTheta * tanTheta));
+    // theta = fetchOptional(json,)
+    AABB localAABB =
+        AABB(Point3f(-radius, -radius, 0), Point3f(radius, radius, height));
     boundingBox = transform.toWorld(localAABB);
-    boundingBox = AABB(Point3f(-100,-100,-100),Point3f(100,100,100));
+    boundingBox = AABB(Point3f(-100, -100, -100), Point3f(100, 100, 100));
 }
 
 REGISTER_CLASS(Cone, "cone")

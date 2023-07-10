@@ -3,14 +3,14 @@
 
 class OrenNayarMaterial : public Material {
 public:
-  OrenNayarMaterial();
+    OrenNayarMaterial();
 
-  OrenNayarMaterial(const Json &json);
+    OrenNayarMaterial(const Json &json);
 
-  virtual std::shared_ptr<BSDF>
-  computeBSDF(const Intersection &intersection) const override;
+    virtual std::shared_ptr<BSDF> computeBSDF(
+        const Intersection &intersection) const override;
 
 private:
-  std::shared_ptr<Texture<Spectrum>> albedo;
-  float roughness;
+    std::shared_ptr<Texture<Spectrum>> albedo;
+    float roughness;
 };

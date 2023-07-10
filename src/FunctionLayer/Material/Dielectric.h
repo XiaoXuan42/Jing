@@ -4,16 +4,16 @@
 
 class DielectricMaterial : public Material {
 public:
-  DielectricMaterial();
+    DielectricMaterial();
 
-  DielectricMaterial(const Json &json);
+    DielectricMaterial(const Json &json);
 
-  virtual std::shared_ptr<BSDF>
-  computeBSDF(const Intersection &intersection) const override;
+    virtual std::shared_ptr<BSDF> computeBSDF(
+        const Intersection &intersection) const override;
 
 private:
-  std::shared_ptr<Texture<Spectrum>> albedo;
-  std::unique_ptr<NDF> ndf;
-  float eta;
-  Vector2f roughness;
+    std::shared_ptr<Texture<Spectrum>> albedo;
+    std::unique_ptr<NDF> ndf;
+    float eta;
+    Vector2f roughness;
 };

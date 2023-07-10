@@ -1,8 +1,9 @@
 #include "IndependentSampler.h"
+
 #include <ResourceLayer/Factory.h>
 IndependentSampler::IndependentSampler(const Json &json) : Sampler(json) {
-  gen = std::mt19937(rd());
-  dist = std::uniform_real_distribution<float>(.0f, 1.f);
+    gen = std::mt19937(rd());
+    dist = std::uniform_real_distribution<float>(.0f, 1.f);
 }
 float IndependentSampler::next1D() { return dist(gen); }
 

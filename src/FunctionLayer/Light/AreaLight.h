@@ -6,9 +6,9 @@ class AreaLight : public Light {
 public:
     AreaLight(const Json &json);
 
-    virtual Spectrum evaluateEmission(const Intersection &intersection,
+    virtual Spectrum evaluateEmission(const SurfaceIntersection &intersection,
                                       const Vector3f &wo) const override;
-    virtual LightSampleResult sample(const Intersection &shadingPoint,
+    virtual LightSampleResult sample(const Point3f &shadingPoint,
                                      const Vector2f &sample) const override;
 
 public:

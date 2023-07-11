@@ -16,7 +16,7 @@ Spectrum WhittedIntegrator::li(Ray &ray, const Scene &scene,
             break;
         }
 
-        Intersection its = itsOpt.value();
+        SurfaceIntersection its = itsOpt.value();
         if (auto light = its.shape->light; light) {
             spectrum += beta * light->evaluateEmission(its, -ray.direction);
         }

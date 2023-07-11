@@ -8,7 +8,7 @@ public:
     MatteMaterial(const Json &json);
 
     virtual std::shared_ptr<BSDF> computeBSDF(
-        const Intersection &intersection) const override;
+        const SurfaceIntersection &intersection) const override;
 
 private:
     std::shared_ptr<Texture<Spectrum>> albedo;

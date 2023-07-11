@@ -48,7 +48,7 @@ bool Disk::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     return true;
 }
 
-void Disk::fillIntersection(float distance, int primID, float u, float v, Intersection *intersection) const {
+void Disk::fillIntersection(float distance, int primID, float u, float v, SurfaceIntersection *intersection) const {
     /// ----------------------------------------------------
     //* 填充圆环相交信息中的法线以及相交位置信息
     //* 1.法线可以先计算出局部空间的法线，然后变换到世界空间
@@ -96,7 +96,7 @@ Disk::Disk(const Json &json) : Shape(json) {
      boundingBox = transform.toWorld(local);
 }
 
-void Disk::uniformSampleOnSurface(Vector2f sample, Intersection *result, float *pdf) const {
+void Disk::uniformSampleOnSurface(Vector2f sample, SurfaceIntersection *result, float *pdf) const {
     //采样光源 暂时不用实现
 }
 REGISTER_CLASS(Disk, "disk")

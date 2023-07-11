@@ -5,9 +5,9 @@ public:
                            float *v) const override;
 
     void fillIntersection(float distance, int primID, float u, float v,
-                          Intersection *intersection) const override;
+                          SurfaceIntersection *intersection) const override;
 
-    void uniformSampleOnSurface(Vector2f sample, Intersection *result,
+    void uniformSampleOnSurface(Vector2f sample, SurfaceIntersection *result,
                                 float *pdf) const override;
 
     Cylinder(const Json &json);

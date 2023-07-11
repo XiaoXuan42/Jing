@@ -11,10 +11,10 @@ public:
                                  float *v) const override;
 
   virtual void fillIntersection(float distance, int primID, float u, float v,
-                                Intersection *intersection) const override;
+                                SurfaceIntersection *intersection) const override;
 
   virtual void uniformSampleOnSurface(Vector2f sample,
-                                      Intersection *intersection,
+                                      SurfaceIntersection *intersection,
                                       float *pdf) const override {
     // TODO finish this
     return;

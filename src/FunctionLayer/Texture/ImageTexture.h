@@ -11,7 +11,7 @@ public:
 
     ImageTexture(const Json &json);
 
-    virtual Spectrum evaluate(const Intersection &intersection) const override;
+    virtual Spectrum evaluate(const SurfaceIntersection &intersection) const override;
 
     virtual Spectrum evaluate(const TextureCoord &texCoord) const override;
 

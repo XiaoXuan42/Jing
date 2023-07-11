@@ -5,6 +5,9 @@
 #include <FunctionLayer/Light/AreaLight.h>
 #include <ResourceLayer/Factory.h>
 
+#include "CoreLayer/ColorSpace/Spectrum.h"
+#include "FunctionLayer/Medium/Medium.h"
+
 Scene::Scene(const Json &json) {
     //* 初始化加速结构，默认使用embree
     std::string accelerationType =
@@ -48,8 +51,30 @@ Scene::Scene(const Json &json) {
     acceleration->build();
 }
 
-std::optional<Intersection> Scene::rayIntersect(Ray &ray) const {
+std::optional<SurfaceIntersection> Scene::rayIntersect(Ray &ray) const {
     return acceleration->rayIntersect(ray);
+}
+
+Spectrum Scene::Tr(Ray &ray) const {
+    Spectrum tr(1.0);
+
+    while (true) {
+        auto itsOpt = acceleration->rayIntersect(ray);
+        if (!itsOpt.has_value()) {
+            break;
+        }
+        auto its = itsOpt.value();
+        if (its.shape->material != nullptr) {
+            return Spectrum(0.0f);
+        }
+        if (ray.medium) {
+            tr *= ray.medium->Tr(ray.origin, ray.direction, its.distance);
+        }
+        ray = Ray(ray.origin + 1e-4 * ray.direction, ray.direction, 1e-4f,
+                  ray.tFar - its.distance);
+        ray.medium = its.getMedium(ray.direction);
+    }
+    return tr;
 }
 
 std::shared_ptr<Light> Scene::sampleLight(float sample, float *pdf) const {

@@ -18,9 +18,9 @@ public:
     }
 
     virtual std::shared_ptr<BSDF> computeBSDF(
-        const Intersection &intersection) const = 0;
+        const SurfaceIntersection &intersection) const = 0;
 
-    void computeShadingGeometry(const Intersection &intersection,
+    void computeShadingGeometry(const SurfaceIntersection &intersection,
                                 Vector3f *normal, Vector3f *tangent,
                                 Vector3f *bitangent) const;
 

@@ -8,7 +8,7 @@ class ConstantTexture : public Texture<TReturn> {
 public:
     ConstantTexture(const TReturn &_data) : data(_data) {}
 
-    virtual TReturn evaluate(const Intersection &intersection) const override {
+    virtual TReturn evaluate(const SurfaceIntersection &intersection) const override {
         return data;
     }
 

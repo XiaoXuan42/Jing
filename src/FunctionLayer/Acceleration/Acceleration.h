@@ -19,13 +19,15 @@ public:
 
     static std::shared_ptr<Acceleration> createAcceleration();
 
-    std::optional<Intersection> rayIntersect(Ray &ray) const {
+    std::optional<SurfaceIntersection> rayIntersect(Ray &ray) const {
         int primID, geomID = -1;
         float u, v;
         bool hit = rayIntersect(ray, &geomID, &primID, &u, &v);
         if (!hit) return std::nullopt;
-        Intersection its;
+        SurfaceIntersection its;
         shapes[geomID]->fillIntersection(ray.tFar, primID, u, v, &its);
+        its.medium_inside = shapes[geomID]->medium_inside.get();
+        its.medium_outside = shapes[geomID]->medium_outside.get();
         return std::make_optional(its);
     }
 

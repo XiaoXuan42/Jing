@@ -59,7 +59,7 @@ bool Parallelogram::rayIntersectShape(Ray &ray, int *primID, float *u,
 
 void Parallelogram::fillIntersection(float distance, int primID, float u,
                                      float v,
-                                     Intersection *intersection) const {
+                                     SurfaceIntersection *intersection) const {
     intersection->shape = this;
     intersection->distance = distance;
     intersection->normal = normalize(cross(edge0, edge1));
@@ -72,7 +72,7 @@ void Parallelogram::fillIntersection(float distance, int primID, float u,
 }
 
 void Parallelogram::uniformSampleOnSurface(Vector2f sample,
-                                           Intersection *intersection,
+                                           SurfaceIntersection *intersection,
                                            float *pdf) const {
     const static float area = cross(edge0, edge1).length();
     *pdf = 1.f / area;

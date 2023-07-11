@@ -2,12 +2,20 @@
 #include <CoreLayer/Math/Math.h>
 #include <FunctionLayer/Ray/Ray.h>
 
+#include <memory>
+
+#include "CoreLayer/ColorSpace/Spectrum.h"
+
 class Shape;
+class Medium;
+
+struct Intersection {
+    float distance;    // 从光线起点到交点的距离
+    Point3f position;  // 交点的位置
+};
 
 //* Ray与Shape交点处的信息
-struct Intersection {
-    float distance;               // 从光线起点到交点的距离
-    Point3f position;             // 交点的位置
+struct SurfaceIntersection : public Intersection {
     Vector3f normal;              // 交点处的法线
     Vector3f tangent, bitangent;  // 交点处的切线和副切线
     Vector2f texCoord;            // 交点处的纹理坐标
@@ -17,9 +25,21 @@ struct Intersection {
     //* 光线微分
     float dudx, dvdx, dudy, dvdy;
     Vector3f dpdx, dpdy;
+    Medium *medium_outside, *medium_inside;
+
+    Medium *getMedium(const Vector3f &dir) {
+        if (dot(dir, normal) < 0) {
+            return medium_inside;
+        }
+        return medium_outside;
+    }
 };
 
-inline void computeRayDifferentials(Intersection *intersection,
+struct MediumIntersection : public Intersection {
+    Spectrum beta;
+};
+
+inline void computeRayDifferentials(SurfaceIntersection *intersection,
                                     const Ray &ray) {
     // 计算光线微分
     do {

@@ -1,6 +1,6 @@
 #include "Material.h"
 
-void Material::computeShadingGeometry(const Intersection &intersection,
+void Material::computeShadingGeometry(const SurfaceIntersection &intersection,
                                       Vector3f *normal, Vector3f *tangent,
                                       Vector3f *bitangent) const {
     if (!normalMap) {

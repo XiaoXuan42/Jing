@@ -10,7 +10,7 @@ public:
 
     NormalTexture(const Json &json);
 
-    virtual Vector3f evaluate(const Intersection &intersection) const override;
+    virtual Vector3f evaluate(const SurfaceIntersection &intersection) const override;
 
     virtual Vector3f evaluate(const TextureCoord &texCoord) const override;
 

@@ -51,7 +51,7 @@ bool Sphere::rayIntersectShape(Ray &ray, int *primID, float *u,
 }
 
 void Sphere::fillIntersection(float distance, int primID, float u, float v,
-                              Intersection *intersection) const {
+                              SurfaceIntersection *intersection) const {
     // u->phi, v->theta
 
     intersection->shape = this;

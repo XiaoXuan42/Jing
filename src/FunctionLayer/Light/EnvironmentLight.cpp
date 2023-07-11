@@ -2,6 +2,8 @@
 
 #include <ResourceLayer/Factory.h>
 
+#include "CoreLayer/Math/Geometry.h"
+
 //* Helper function
 Vector2f direction2uv(Vector3f direction) {
     float u, v;
@@ -66,7 +68,7 @@ Spectrum EnvironmentLight::evaluateEmission(const Ray &ray) const {
         TextureCoord{uv, Vector2f(.0f, .0f), Vector2f(.0f, .0f)});
 }
 
-LightSampleResult EnvironmentLight::sample(const Intersection &shadingPoint,
+LightSampleResult EnvironmentLight::sample(const Point3f &p,
                                            const Vector2f &sample) const {
     const static float invWidth = 1.f / environmentMap->size[0],
                        invHeight = 1.f / environmentMap->size[1];

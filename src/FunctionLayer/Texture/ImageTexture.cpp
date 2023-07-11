@@ -9,7 +9,7 @@ ImageTexture::ImageTexture(const Json &json) : Texture<Spectrum>() {
   mipmap = std::make_shared<MipMap>(image);
 }
 
-Spectrum ImageTexture::evaluate(const Intersection &intersection) const {
+Spectrum ImageTexture::evaluate(const SurfaceIntersection &intersection) const {
   TextureCoord texCoord = mapping->map(intersection);
   return evaluate(texCoord);
 }

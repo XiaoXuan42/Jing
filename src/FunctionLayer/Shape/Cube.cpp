@@ -99,7 +99,7 @@ bool Cube::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
 }
 
 void Cube::fillIntersection(float distance, int primID, float u, float v,
-                            Intersection *intersection) const {
+                            SurfaceIntersection *intersection) const {
     intersection->shape = this;
     intersection->distance = distance;
     vecmat::vec4f normal{.0f, .0f, .0f, .0f};

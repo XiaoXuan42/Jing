@@ -2,6 +2,8 @@
 
 #include <ResourceLayer/Factory.h>
 
+#include "CoreLayer/Math/Geometry.h"
+
 SpotLight::SpotLight(const Json &json) : Light(json) {
     position = fetchRequired<Point3f>(json, "position");
     energy = fetchRequired<Spectrum>(json, "energy");
@@ -9,14 +11,14 @@ SpotLight::SpotLight(const Json &json) : Light(json) {
 }
 
 //! 由于点光源不会与光线发生相交，故该函数实际上不会被调用
-Spectrum SpotLight::evaluateEmission(const Intersection &intersection,
+Spectrum SpotLight::evaluateEmission(const SurfaceIntersection &intersection,
                                      const Vector3f &wo) const {
     return Spectrum(.0f);
 }
 
-LightSampleResult SpotLight::sample(const Intersection &shadingPoint,
+LightSampleResult SpotLight::sample(const Point3f &p,
                                     const Vector2f &sample) const {
-    Vector3f shadingPoint2sample = position - shadingPoint.position;
+    Vector3f shadingPoint2sample = position - p;
     return LightSampleResult{energy,
                              normalize(shadingPoint2sample),
                              shadingPoint2sample.length() - EPSILON,

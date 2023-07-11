@@ -6,7 +6,7 @@
 #include <ResourceLayer/JsonUtil.h>
 // TODO 目前只考虑二维纹理
 // TODO 目前不使用模板对Texture做进一步的抽象
-struct Intersection;
+struct SurfaceIntersection;
 
 struct TextureCoord {
     Vector2f coord;
@@ -16,14 +16,14 @@ struct TextureCoord {
 
 class TextureMapping {
 public:
-    virtual TextureCoord map(const Intersection &intersection) const = 0;
+    virtual TextureCoord map(const SurfaceIntersection &intersection) const = 0;
 };
 
 class UVMapping : public TextureMapping {
 public:
     UVMapping() = default;
 
-    virtual TextureCoord map(const Intersection &intersection) const override;
+    virtual TextureCoord map(const SurfaceIntersection &intersection) const override;
 };
 
 template <typename TReturn>
@@ -34,7 +34,7 @@ public:
         mapping = std::make_shared<UVMapping>();
     }
 
-    virtual TReturn evaluate(const Intersection &intersection) const = 0;
+    virtual TReturn evaluate(const SurfaceIntersection &intersection) const = 0;
 
     virtual TReturn evaluate(const TextureCoord &texCoord) const = 0;
 

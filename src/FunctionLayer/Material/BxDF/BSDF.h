@@ -19,6 +19,7 @@ public:
         tangent = _tangent;
         bitangent = _bitangent;
     }
+    // 返回brdf * cos\theta
     virtual Spectrum f(const Vector3f &wo, const Vector3f &wi) const = 0;
     virtual BSDFSampleResult sample(const Vector3f &wo,
                                     const Vector2f &sample) const = 0;

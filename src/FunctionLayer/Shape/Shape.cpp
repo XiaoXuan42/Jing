@@ -27,6 +27,9 @@ Shape::Shape(const Json &json) {
     } else {
         material = std::make_shared<MatteMaterial>();
     }
+    // TODO: medium
+    medium_inside = nullptr;
+    medium_outside = nullptr;
 }
 
 void UserShapeBound(const RTCBoundsFunctionArguments *args) {

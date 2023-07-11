@@ -7,18 +7,17 @@ AreaLight::AreaLight(const Json &json) : Light(json) {
     energy = fetchRequired<Spectrum>(json, "energy");
 }
 
-Spectrum AreaLight::evaluateEmission(const Intersection &intersection,
+Spectrum AreaLight::evaluateEmission(const SurfaceIntersection &intersection,
                                      const Vector3f &wo) const {
     return energy;
 }
 
-LightSampleResult AreaLight::sample(const Intersection &shadingPoint,
+LightSampleResult AreaLight::sample(const Point3f &p,
                                     const Vector2f &sample) const {
-    Intersection sampleResult;
+    SurfaceIntersection sampleResult;
     float pdf;
     shape->uniformSampleOnSurface(sample, &sampleResult, &pdf);
-    Vector3f shadingPoint2sample =
-        sampleResult.position - shadingPoint.position;
+    Vector3f shadingPoint2sample = sampleResult.position - p;
 
     return {energy,
             normalize(shadingPoint2sample),

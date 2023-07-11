@@ -61,7 +61,7 @@ bool Cylinder::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) cons
     return point_test_set(tfar, 1);
 }
 
-void Cylinder::fillIntersection(float distance, int primID, float u, float v, Intersection *intersection) const {
+void Cylinder::fillIntersection(float distance, int primID, float u, float v, SurfaceIntersection *intersection) const {
     /// ----------------------------------------------------
     //* 填充圆柱相交信息中的法线以及相交位置信息
     //* 1.法线可以先计算出局部空间的法线，然后变换到世界空间
@@ -99,7 +99,7 @@ void Cylinder::fillIntersection(float distance, int primID, float u, float v, In
     intersection->bitangent = bitangent;
 }
 
-void Cylinder::uniformSampleOnSurface(Vector2f sample, Intersection *result, float *pdf) const {
+void Cylinder::uniformSampleOnSurface(Vector2f sample, SurfaceIntersection *result, float *pdf) const {
 
 }
 

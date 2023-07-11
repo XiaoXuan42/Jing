@@ -66,7 +66,7 @@ bool Triangle::rayIntersectShape(Ray &ray, int *primID, float *u,
 }
 
 void Triangle::fillIntersection(float distance, int primID, float u, float v,
-                                Intersection *intersection) const {
+                                SurfaceIntersection *intersection) const {
     // 该函数实际上不会被调用
     return;
 }
@@ -110,7 +110,7 @@ bool TriangleMesh::rayIntersectShape(Ray &ray, int *primID, float *u,
 }
 
 void TriangleMesh::fillIntersection(float distance, int primID, float u,
-                                    float v, Intersection *intersection) const {
+                                    float v, SurfaceIntersection *intersection) const {
     intersection->distance = distance;
     intersection->shape = this;
     //* 在三角形内部用插值计算交点、法线以及纹理坐标

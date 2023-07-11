@@ -44,7 +44,7 @@ ConductorMaterial::ConductorMaterial(const Json &json) : Material(json) {
 }
 
 std::shared_ptr<BSDF> ConductorMaterial::computeBSDF(
-    const Intersection &intersection) const {
+    const SurfaceIntersection &intersection) const {
     Vector3f normal, tangent, bitangent;
     computeShadingGeometry(intersection, &normal, &tangent, &bitangent);
 

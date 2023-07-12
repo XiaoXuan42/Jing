@@ -61,7 +61,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
         MediumIntersection mit;
         medium = ray.medium;
         if (medium) {
-            medium->sample(ray, sit, mit);
+            medium->sample_forward(ray, *sampler, mit);
             throughput *= mit.beta;
 
             if (mit.distance < ray.tFar) {
@@ -95,7 +95,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
                     Spectrum f = bsdf->f(wo, wi);
                     L += throughput * f * lightSpec;
                 } else {
-                    float p = medium->phase.p(wo, wi);
+                    float p = medium->scatter_phase(wo, wi);
                     L += throughput * p * lightSpec;
                 }
             }
@@ -118,7 +118,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
                     Spectrum f = bsdf->f(wo, wi);
                     L += throughput * f * lightSpec;
                 } else {
-                    float p = medium->phase.p(wi, wo);
+                    float p = medium->scatter_phase(wi, wo);
                     L += throughput * p * lightSpec;
                 }
             }
@@ -144,7 +144,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
         } else {
             // scatter
             MediumInScatter mis;
-            medium->in_scatter(mit.position, -ray.direction, sampler, mis);
+            medium->sample_scatter(mit.position, -ray.direction, *sampler, mis);
             throughput *= mis.beta;
 
             ray = Ray(mit.position, mis.wi);

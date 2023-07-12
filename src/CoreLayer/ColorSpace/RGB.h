@@ -77,6 +77,8 @@ public:
         fflush(stdout);
     }
 
+    static int cntChannel() { return 3; }
+
 private:
     Vector3f rgb;
 };

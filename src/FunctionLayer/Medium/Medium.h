@@ -40,19 +40,19 @@ public:
         float len = fm::sqrt(1 - cosVal * cosVal);
         Vector3f wi =
             fm::cos(theta) * len * a1 + fm::sin(theta) * len * a2 + cosVal * wo;
-        
+
         if (pdf) {
             *pdf = phase(wo, wi);
         }
-        
+
         return wi;
     }
 
     float phase(const Vector3f &wo, const Vector3f &wi) {
         float cos = dot(wo, wi);
         float g_sq = g * g;
-        return 0.25 * INV_PI * (1 - g_sq) /
-               fm::pow<float>(1 + g_sq + 2 * g * cos, 1.5f);
+        float denom = 1 + g_sq + 2 * g * cos;
+        return 0.25 * INV_PI * (1 - g_sq) / (denom * fm::sqrt(denom));
     }
 
 private:
@@ -68,8 +68,8 @@ class Medium {
 public:
     virtual Spectrum Tr(const Point3f &p, const Vector3f &w, float t) = 0;
     virtual void sample_forward(const Ray &ray, Sampler &sampler,
-                        MediumIntersection &mit) = 0;
+                                MediumIntersection &mit) = 0;
     virtual void sample_scatter(const Point3f &p, const Vector3f &wo,
-                            Sampler &sampler, MediumInScatter &mis) = 0;
+                                Sampler &sampler, MediumInScatter &mis) = 0;
     virtual float scatter_phase(const Vector3f &wo, const Vector3f &wi);
 };

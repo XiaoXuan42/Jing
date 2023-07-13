@@ -45,7 +45,8 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
     while (true) {
         if (!itsOpt.has_value()) {
             for (auto light : scene.infiniteLights) {
-                L += throughput * light->evaluateEmission(ray);
+                Spectrum tr = scene.Tr(ray);
+                L += throughput * tr * light->evaluateEmission(ray);
             }
             break;
         }

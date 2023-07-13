@@ -55,8 +55,9 @@ std::optional<SurfaceIntersection> Scene::rayIntersect(Ray &ray) const {
     return acceleration->rayIntersect(ray);
 }
 
-Spectrum Scene::Tr(Ray &ray) const {
+Spectrum Scene::Tr(const Ray &const_ray) const {
     Spectrum tr(1.0);
+    Ray ray = const_ray;
 
     while (true) {
         auto itsOpt = acceleration->rayIntersect(ray);

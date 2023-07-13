@@ -16,7 +16,7 @@ Spectrum PathIntegrator::li(Ray &ray, const Scene &scene,
         if (!intersectionOpt.has_value()) {
             for (auto light : scene.infiniteLights)
                 spectrum += throughput * light->evaluateEmission(ray);
-            return spectrum;
+            break;
         }
 
         auto intersection = intersectionOpt.value();

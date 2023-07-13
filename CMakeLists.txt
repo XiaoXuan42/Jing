@@ -37,6 +37,7 @@ add_executable(Moer
   src/FunctionLayer/Integrator/NormalIntegrator.cpp
   src/FunctionLayer/Integrator/DirectIntegrator.cpp
   src/FunctionLayer/Integrator/PathIntegrator.cpp
+  src/FunctionLayer/Integrator/VolIntegrator.cpp
   src/FunctionLayer/Integrator/WhittedIntegrator.cpp
   src/FunctionLayer/Camera/Camera.cpp
   src/FunctionLayer/Camera/Pinhole.cpp
@@ -64,7 +65,15 @@ add_executable(Moer
   src/ResourceLayer/Image.cpp
   src/ResourceLayer/Mesh.cpp
   src/ResourceLayer/FileUtil.cpp
-  src/FunctionLayer/Shape/Disk.cpp src/FunctionLayer/Shape/Disk.h src/FunctionLayer/Shape/Cone.cpp src/FunctionLayer/Shape/Cone.h src/FunctionLayer/Shape/Cylinder.cpp src/FunctionLayer/Shape/Cylinder.h src/FunctionLayer/Integrator/UVIntegrator.cpp src/FunctionLayer/Integrator/UVIntegrator.h src/FunctionLayer/Acceleration/BVH.cpp src/FunctionLayer/Acceleration/BVH.h)
+  src/FunctionLayer/Shape/Disk.cpp 
+  src/FunctionLayer/Shape/Disk.h 
+  src/FunctionLayer/Shape/Cone.cpp src/FunctionLayer/Shape/Cone.h 
+  src/FunctionLayer/Shape/Cylinder.cpp 
+  src/FunctionLayer/Shape/Cylinder.h 
+  src/FunctionLayer/Integrator/UVIntegrator.cpp 
+  src/FunctionLayer/Integrator/UVIntegrator.h 
+  src/FunctionLayer/Acceleration/BVH.cpp 
+  src/FunctionLayer/Acceleration/BVH.h)
 
 target_include_directories(Moer PUBLIC ./externals)
 target_include_directories(Moer PUBLIC ./src)

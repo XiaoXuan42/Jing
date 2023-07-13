@@ -1,5 +1,8 @@
 #pragma once
 #include <CoreLayer/Math/Math.h>
+
+#include <iostream>
+#include <ostream>
 //* 使用RGB三通道颜色空间
 
 class SpectrumRGB {

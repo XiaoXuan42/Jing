@@ -1,6 +1,7 @@
 #include "AreaLight.h"
 
 #include <ResourceLayer/Factory.h>
+
 AreaLight::AreaLight(const Json &json) : Light(json) {
     type = LightType::AreaLight;
     shape = Factory::construct_class<Shape>(json["shape"]);

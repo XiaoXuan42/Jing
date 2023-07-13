@@ -12,6 +12,10 @@ class Medium;
 struct Intersection {
     float distance;    // 从光线起点到交点的距离
     Point3f position;  // 交点的位置
+
+    void debugPrint() {
+        printf("%f, (%f,%f,%f)\n", distance, position[0], position[1], position[2]);
+    }
 };
 
 //* Ray与Shape交点处的信息

@@ -8,6 +8,7 @@
 
 #include "CoreLayer/ColorSpace/RGB.h"
 #include "CoreLayer/ColorSpace/Spectrum.h"
+#include "CoreLayer/Math/Constant.h"
 #include "CoreLayer/Math/Geometry.h"
 #include "FunctionLayer/Integrator/Integrator.h"
 #include "FunctionLayer/Light/Light.h"
@@ -57,7 +58,9 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
             auto light = sit.shape->light;
             if (light) {
                 Spectrum lighting = light->evaluateEmission(sit, wo);
-                Spectrum tr = scene.Tr(ray);
+                Ray shadowRay = ray;
+                shadowRay.tFar -= EPSILON;
+                Spectrum tr = scene.Tr(shadowRay);
                 L += throughput * tr * lighting;
             }
         }

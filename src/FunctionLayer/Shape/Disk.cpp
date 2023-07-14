@@ -1,9 +1,11 @@
 #include "Disk.h"
+
+#include <chrono>
+
 #include "CoreLayer/Math/Constant.h"
 #include "CoreLayer/Math/Geometry.h"
 #include "CoreLayer/Math/Transform.h"
 #include "ResourceLayer/Factory.h"
-#include <chrono>
 bool Disk::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     //* 完成光线与圆环的相交 填充primId,u,v.如果相交，更新光线的tFar
     //* 1.光线变换到局部空间
@@ -30,7 +32,8 @@ bool Disk::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
         return false;
     }
     Point3f intersect = origin + direction * t;
-    float r = std::sqrt(intersect[0] * intersect[0] + intersect[1] * intersect[1]);
+    float r =
+        std::sqrt(intersect[0] * intersect[0] + intersect[1] * intersect[1]);
     if (r > radius || r < innerRadius) {
         return false;
     }
@@ -48,7 +51,8 @@ bool Disk::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     return true;
 }
 
-void Disk::fillIntersection(float distance, int primID, float u, float v, SurfaceIntersection *intersection) const {
+void Disk::fillIntersection(float distance, int primID, float u, float v,
+                            SurfaceIntersection *intersection) const {
     /// ----------------------------------------------------
     //* 填充圆环相交信息中的法线以及相交位置信息
     //* 1.法线可以先计算出局部空间的法线，然后变换到世界空间
@@ -81,22 +85,23 @@ void Disk::fillIntersection(float distance, int primID, float u, float v, Surfac
 }
 
 Disk::Disk(const Json &json) : Shape(json) {
-//    normal = transform.toWorld(Vector3f(0,0,1));
-//    origin = transform.toWorld(Point3f(0,0,0));
-//    auto
-//    //radius认为是三个方向的上的scale平均
-//    vecmat::vec4f v(1,1,1,0);
-//    auto radiusVec = transform.scale * v;
-//    radiusVec/=radiusVec[3];
-//    radius = (radiusVec[0]+radiusVec[1]+radiusVec[2])/3;
-     radius = fetchOptional(json,"radius",1.f);
-     innerRadius = fetchOptional(json,"inner_radius",0.f);
-     phiMax = fetchOptional(json,"phi_max",2 * PI);
-     AABB local(Point3f(-radius,-radius,0),Point3f(radius,radius,0));
-     boundingBox = transform.toWorld(local);
+    //    normal = transform.toWorld(Vector3f(0,0,1));
+    //    origin = transform.toWorld(Point3f(0,0,0));
+    //    auto
+    //    //radius认为是三个方向的上的scale平均
+    //    vecmat::vec4f v(1,1,1,0);
+    //    auto radiusVec = transform.scale * v;
+    //    radiusVec/=radiusVec[3];
+    //    radius = (radiusVec[0]+radiusVec[1]+radiusVec[2])/3;
+    radius = fetchOptional(json, "radius", 1.f);
+    innerRadius = fetchOptional(json, "inner_radius", 0.f);
+    phiMax = fetchOptional(json, "phi_max", 2 * PI);
+    AABB local(Point3f(-radius, -radius, 0), Point3f(radius, radius, 0));
+    boundingBox = transform.toWorld(local);
 }
 
-void Disk::uniformSampleOnSurface(Vector2f sample, SurfaceIntersection *result, float *pdf) const {
-    //采样光源 暂时不用实现
+void Disk::uniformSampleOnSurface(Vector2f sample, SurfaceIntersection *result,
+                                  float *pdf) const {
+    // 采样光源 暂时不用实现
 }
 REGISTER_CLASS(Disk, "disk")

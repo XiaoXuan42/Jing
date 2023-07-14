@@ -1,10 +1,12 @@
 #include "Cylinder.h"
-#include "CoreLayer/Math/Geometry.h"
+
 #include "CoreLayer/Math/Function.h"
+#include "CoreLayer/Math/Geometry.h"
 #include "FastMath/VecMat.h"
 #include "ResourceLayer/Factory.h"
 
-bool Cylinder::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
+bool Cylinder::rayIntersectShape(Ray &ray, int *primID, float *u,
+                                 float *v) const {
     //* 完成光线与圆柱的相交 填充primId,u,v.如果相交，更新光线的tFar
     //* 1.光线变换到局部空间
     //* 2.联立方程求解
@@ -35,7 +37,7 @@ bool Cylinder::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) cons
             return false;
         }
         const Point3f pos = origin + t * direction;
-        if(pos[2] < 0 || pos[2] > height) {
+        if (pos[2] < 0 || pos[2] > height) {
             return false;
         }
         double ang = atan2(pos[1], pos[0]);
@@ -61,7 +63,8 @@ bool Cylinder::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) cons
     return point_test_set(tfar, 1);
 }
 
-void Cylinder::fillIntersection(float distance, int primID, float u, float v, SurfaceIntersection *intersection) const {
+void Cylinder::fillIntersection(float distance, int primID, float u, float v,
+                                SurfaceIntersection *intersection) const {
     /// ----------------------------------------------------
     //* 填充圆柱相交信息中的法线以及相交位置信息
     //* 1.法线可以先计算出局部空间的法线，然后变换到世界空间
@@ -99,16 +102,17 @@ void Cylinder::fillIntersection(float distance, int primID, float u, float v, Su
     intersection->bitangent = bitangent;
 }
 
-void Cylinder::uniformSampleOnSurface(Vector2f sample, SurfaceIntersection *result, float *pdf) const {
-
-}
+void Cylinder::uniformSampleOnSurface(Vector2f sample,
+                                      SurfaceIntersection *result,
+                                      float *pdf) const {}
 
 Cylinder::Cylinder(const Json &json) : Shape(json) {
-    radius = fetchOptional(json,"radius",1.f);
-    height = fetchOptional(json,"height",1.f);
-    phiMax = fetchOptional(json,"phi_max",2 * PI);
-    AABB localAABB = AABB(Point3f(-radius,-radius,0),Point3f(radius,radius,height));
+    radius = fetchOptional(json, "radius", 1.f);
+    height = fetchOptional(json, "height", 1.f);
+    phiMax = fetchOptional(json, "phi_max", 2 * PI);
+    AABB localAABB =
+        AABB(Point3f(-radius, -radius, 0), Point3f(radius, radius, height));
     boundingBox = transform.toWorld(localAABB);
 }
 
-REGISTER_CLASS(Cylinder,"cylinder")
+REGISTER_CLASS(Cylinder, "cylinder")

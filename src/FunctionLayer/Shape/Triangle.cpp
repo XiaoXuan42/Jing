@@ -110,7 +110,8 @@ bool TriangleMesh::rayIntersectShape(Ray &ray, int *primID, float *u,
 }
 
 void TriangleMesh::fillIntersection(float distance, int primID, float u,
-                                    float v, SurfaceIntersection *intersection) const {
+                                    float v,
+                                    SurfaceIntersection *intersection) const {
     intersection->distance = distance;
     intersection->shape = this;
     //* 在三角形内部用插值计算交点、法线以及纹理坐标

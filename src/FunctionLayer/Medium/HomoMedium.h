@@ -4,11 +4,13 @@
 #include "CoreLayer/Math/Geometry.h"
 #include "FunctionLayer/Shape/Intersection.h"
 #include "Medium.h"
+#include "ResourceLayer/JsonUtil.h"
 
 #include <memory>
 
 class HomoMedium : public Medium {
 public:
+    explicit HomoMedium(const Json &json);
     HomoMedium(std::unique_ptr<PhaseFunction> phase, const Spectrum &sigma_t,
                const Spectrum &sigma_s)
         : phase_(std::move(phase)), sigma_t_(sigma_t), sigma_s_(sigma_s) {}

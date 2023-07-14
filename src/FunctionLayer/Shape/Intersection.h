@@ -14,7 +14,8 @@ struct Intersection {
     Point3f position;  // 交点的位置
 
     void debugPrint() {
-        printf("%f, (%f,%f,%f)\n", distance, position[0], position[1], position[2]);
+        printf("%f, (%f,%f,%f)\n", distance, position[0], position[1],
+               position[2]);
     }
 };
 

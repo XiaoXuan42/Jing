@@ -28,13 +28,23 @@ void HomoMedium::sample_forward(const Ray &ray, Sampler &sampler,
         mit.distance = ray.tFar;
         mit.position = ray.at(ray.tFar);
         Spectrum tr = Tr(ray.origin, ray.direction, ray.tFar);
-        // 这里利用了Tr的具体表达式, p = (tr[0] + tr[1] + tr[2]) / 3
-        mit.beta = tr * 3 / (tr[0] + tr[1] + tr[2]);
+        Spectrum prob = tr;
+        float p = 0.0f;
+        for (int i = 0; i < Spectrum::cntChannel(); ++i) {
+            p += prob[i];
+        }
+        p /= Spectrum::cntChannel();
+        mit.beta = tr / p;
     } else {
         mit.distance = dis;
         mit.position = ray.at(dis);
         Spectrum tr = Tr(ray.origin, ray.direction, dis);
-        float p = 1.0f - (tr[0] + tr[1] + tr[2]) / 3.0f;
+        Spectrum prob = tr * sigma_t_;
+        float p = 0.0f;
+        for (int i = 0; i < Spectrum::cntChannel(); ++i) {
+            p += prob[i];
+        }
+        p /= Spectrum::cntChannel();
         mit.beta = tr * sigma_s_ / p;
     }
 }

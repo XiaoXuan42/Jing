@@ -65,8 +65,9 @@ float HomoMedium::scatter_phase(const Vector3f &wo, const Vector3f &wi) {
 HomoMedium::HomoMedium(const Json &json) {
     float g = fetchRequired<float>(json, "g");
     phase_ = std::make_unique<PhaseHG>(PhaseHG(g));
-    sigma_t_ = fetchRequired<Spectrum>(json, "sigma_t");
+    sigma_a_ = fetchRequired<Spectrum>(json, "sigma_a");
     sigma_s_ = fetchRequired<Spectrum>(json, "sigma_s");
+    sigma_t_ = sigma_a_ + sigma_s_;
 }
 
 REGISTER_CLASS(HomoMedium, "homomedium")

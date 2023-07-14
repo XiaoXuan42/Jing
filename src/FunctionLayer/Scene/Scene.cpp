@@ -6,6 +6,7 @@
 #include <ResourceLayer/Factory.h>
 
 #include "CoreLayer/ColorSpace/Spectrum.h"
+#include "FunctionLayer/Material/Material.h"
 #include "FunctionLayer/Medium/Medium.h"
 
 Scene::Scene(const Json &json) {
@@ -65,7 +66,8 @@ Spectrum Scene::Tr(const Ray &const_ray) const {
             break;
         }
         auto its = itsOpt.value();
-        if (its.shape->material != nullptr) {
+        if (its.shape->material != nullptr &&
+            !its.shape->material->is_transparent()) {
             return Spectrum(0.0f);
         }
         if (ray.medium) {

@@ -13,4 +13,6 @@ public:
         return std::make_shared<Transparent>(
             Transparent(its.normal, its.tangent, its.bitangent));
     }
+
+    virtual bool is_transparent() const override { return true; }
 };

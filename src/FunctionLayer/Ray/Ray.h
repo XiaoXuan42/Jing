@@ -27,7 +27,7 @@ struct Ray {
     //* 基本参数
     Point3f origin;
     Vector3f direction;
-    float tFar, tNear, time;
+    float tNear, tFar, time;
 
     //* 光线微分
     bool hasDifferentials = false;

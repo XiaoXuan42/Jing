@@ -60,8 +60,8 @@ bool Cube::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
         if (tNear > tFar) return false;
     }
 
-    auto compute = [min = boxMin, max = boxMax](Point3f hitpoint, int *primID,
-                                                float *u, float *v) {
+    auto compute = [min = boxMin, max = boxMax](Point3f hitpoint, int *primIDl,
+                                                float *ul, float *vl) {
         float minBias = FLT_MAX;
         int flag = -1;
         for (int i = 0; i < 3; ++i) {
@@ -75,11 +75,11 @@ bool Cube::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
             }
         }
 
-        *primID = flag;
+        *primIDl = flag;
         int axis = (flag / 2 + 1) % 3;
-        *u = (float)(hitpoint[axis] - min[axis]) / (max[axis] - min[axis]);
+        *ul = (float)(hitpoint[axis] - min[axis]) / (max[axis] - min[axis]);
         axis = (axis + 1) % 3;
-        *v = (float)(hitpoint[axis] - min[axis]) / (max[axis] - min[axis]);
+        *vl = (float)(hitpoint[axis] - min[axis]) / (max[axis] - min[axis]);
     };
 
     bool hit = false;

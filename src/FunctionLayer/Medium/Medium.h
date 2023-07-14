@@ -15,7 +15,7 @@ public:
 
 class PhaseHG : public PhaseFunction {
 public:
-    explicit PhaseHG(float g) : g(g) {}
+    explicit PhaseHG(float _g) : g(_g) {}
     Vector3f sample(const Vector3f &wo, Sampler &sampler, float *pdf) {
         // ref: pbrt
         // cos\theta = \frac{1}{2g}((\frac{1-g^2}{-2gx + g + 1})^2 - 1 - g^2)

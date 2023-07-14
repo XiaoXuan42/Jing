@@ -72,10 +72,6 @@ Vector3f MipMap::lookUp(Vector2f uv, Vector2f duv0, Vector2f duv1) const {
     float width = std::max(std::max(std::abs(duv0[0]), std::abs(duv0[1])),
                            std::max(std::abs(duv1[0]), std::abs(duv1[1])));
     float level = pyramid.size() - 1 + fm::log2(std::max(width, 1e-8f));
-    int x = uv[0] * pyramid[0]->size[0];
-    int y = uv[1] * pyramid[0]->size[1];
-    // return texel(0, x, y); // force no filter
-    //  return bilinear(0, uv); // force bilinear
 
     if (level < 0) {
         return bilinear(0, uv);

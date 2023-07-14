@@ -8,7 +8,7 @@ EmbreeBVH::EmbreeBVH() : Acceleration() {
 
 void EmbreeBVH::build() {
     //* 遍历场景内的每个几何体，获取其embree描述
-    for (const auto shape : shapes) {
+    for (const auto &shape : shapes) {
         RTCGeometry geometry = shape->getEmbreeGeometry(device);
         //* 添加至embree中
         rtcAttachGeometry(scene, geometry);

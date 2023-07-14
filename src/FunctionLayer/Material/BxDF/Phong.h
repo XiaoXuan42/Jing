@@ -34,7 +34,7 @@ public:
     }
 
     float pdf(const Vector3f &wo, const Vector3f &wi) const {
-        Vector3f woLocal = toLocal(wo), wiLocal = toLocal(wi);
+        Vector3f wiLocal = toLocal(wi);
         return squareToCosineHemispherePdf(wiLocal);
     }
 

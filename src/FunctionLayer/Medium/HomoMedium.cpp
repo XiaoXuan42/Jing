@@ -19,7 +19,6 @@ Spectrum HomoMedium::Tr(const Point3f &p, const Vector3f &w, float t) {
 
 void HomoMedium::sample_forward(const Ray &ray, Sampler &sampler,
                                 MediumIntersection &mit) {
-    float t = 0.0;
     int channelIdx = int((sampler.next1D() - 1e-5) * Spectrum::cntChannel());
     float c = sigma_t_[channelIdx];
     float dis = -fm::log(1 - sampler.next1D()) / c;

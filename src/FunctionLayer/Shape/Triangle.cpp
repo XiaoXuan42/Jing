@@ -21,7 +21,7 @@ Triangle::Triangle(int _primID, int _vtx0Idx, int _vtx1Idx, int _vtx2Idx,
     this->geometryID = mesh->geometryID;
 }
 
-bool Triangle::rayIntersectShape(Ray &ray, int *primID, float *u,
+bool Triangle::rayIntersectShape(Ray &ray, int *oPrimID, float *u,
                                  float *v) const {
     Point3f origin = ray.origin;
     Vector3f direction = ray.direction;
@@ -56,7 +56,7 @@ bool Triangle::rayIntersectShape(Ray &ray, int *primID, float *u,
 
     if (u_ >= .0f && v_ >= .0f && (u_ + v_ <= 1.f)) {
         ray.tFar = t;
-        *primID = this->primID;
+        *oPrimID = this->primID;
         *u = u_;
         *v = v_;
         return true;
@@ -65,7 +65,7 @@ bool Triangle::rayIntersectShape(Ray &ray, int *primID, float *u,
     return false;
 }
 
-void Triangle::fillIntersection(float distance, int primID, float u, float v,
+void Triangle::fillIntersection(float distance, int oPrimID, float u, float v,
                                 SurfaceIntersection *intersection) const {
     // 该函数实际上不会被调用
     return;

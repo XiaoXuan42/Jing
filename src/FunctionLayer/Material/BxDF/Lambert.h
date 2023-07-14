@@ -8,7 +8,7 @@ public:
         : BSDF(_normal, _tangent, _bitangent), albedo(_albedo) {}
 
     virtual Spectrum f(const Vector3f &wo, const Vector3f &wi) const override {
-        Vector3f woLocal = toLocal(wo), wiLocal = toLocal(wi);
+        Vector3f wiLocal = toLocal(wi);
         // if (woLocal[1] <= .0f || wiLocal[1] <= .0f)
         //   return Spectrum(0.f);
         return albedo * INV_PI * wiLocal[1];

@@ -12,7 +12,7 @@ bool LinearAcceleration::rayIntersect(Ray &ray, int *geomID, int *primID,
                                       float *u, float *v) const {
     // Just traverse all shapes in the scene
 
-    for (const auto shape : shapes) {
+    for (const auto &shape : shapes) {
         if (shape->rayIntersectShape(ray, primID, u, v)) {
             *geomID = shape->geometryID;
         }

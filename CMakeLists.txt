@@ -97,6 +97,14 @@ if(APPLE)
   set(EMBREE_DLL ${LIBS_PATH}/libembree3.3.dylib ${LIBS_PATH}/libtbb.12.2.dylib)
 endif()
 
+FIND_PACKAGE(OpenMP REQUIRED)
+if (OPENMP_FOUND)
+  message("OPENMP FOUND")
+  add_compile_definitions(MOER_OPENMP)
+  target_compile_options(Moer PRIVATE ${OpenMP_CXX_FLAGS})
+  target_link_libraries(Moer PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
 target_link_directories(Moer PUBLIC ${LIBS_PATH})
 target_link_directories(Moer PUBLIC ${PROJECT_SOURCE_DIR}/target/lib)
 

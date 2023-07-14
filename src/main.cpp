@@ -14,6 +14,10 @@
 #include <fstream>
 #include <regex>
 
+#ifdef MOER_OPENMP
+#include <omp.h>
+#endif
+
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 
@@ -40,24 +44,38 @@ int main(int argc, char **argv) {
 
     auto start = std::chrono::system_clock::now();
 
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            Vector2f NDC{(float)x / width, (float)y / height};
-            Spectrum li(.0f);
-            for (int i = 0; i < spp; ++i) {
-                Ray ray = camera->sampleRayDifferentials(
-                    CameraSample{sampler->next2D()}, NDC);
-                li += integrator->li(ray, *scene, sampler);
-            }
-            camera->film->deposit({x, y}, li / spp);
-
-            int finished = x + y * width;
-            if (finished % 5 == 0) {
-                printProgress((float)finished / (height * width));
-            }
+#ifdef MOER_OPENMP
+#pragma omp parallel for num_threads(12)
+    for (int i = 0; i < height * width; ++i) {
+        int y = i / width;
+        int x = i - y * width;
+        Vector2f NDC{(float)x / width, (float)y / height};
+        Spectrum li(.0f);
+        for (int i = 0; i < spp; ++i) {
+            Ray ray = camera->sampleRayDifferentials(
+                CameraSample{sampler->next2D()}, NDC);
+            li += integrator->li(ray, *scene, sampler);
+        }
+        camera->film->deposit({x, y}, li / spp);
+    }
+#else
+    for (int i = 0; i < height * width; ++i) {
+        int y = i / width;
+        int x = i - y * width;
+        Vector2f NDC{(float)x / width, (float)y / height};
+        Spectrum li(.0f);
+        for (int i = 0; i < spp; ++i) {
+            Ray ray = camera->sampleRayDifferentials(
+                CameraSample{sampler->next2D()}, NDC);
+            li += integrator->li(ray, *scene, sampler);
+        }
+        camera->film->deposit({x, y}, li / spp);
+        if (i % 5 == 0) {
+            printProgress((float)i / (height * width));
         }
     }
     printProgress(1.f);
+#endif
 
     auto end = std::chrono::system_clock::now();
 

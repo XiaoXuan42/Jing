@@ -1,9 +1,13 @@
 #include "HomoMedium.h"
 
+#include <memory>
+
 #include "CoreLayer/ColorSpace/Spectrum.h"
 #include "CoreLayer/Math/Geometry.h"
 #include "FastMath/FastMath.h"
 #include "FunctionLayer/Medium/Medium.h"
+#include "ResourceLayer/Factory.h"
+#include "ResourceLayer/JsonUtil.h"
 
 Spectrum HomoMedium::Tr(const Point3f &p, const Vector3f &w, float t) {
     Spectrum tr(0.0);
@@ -35,7 +39,8 @@ void HomoMedium::sample_forward(const Ray &ray, Sampler &sampler,
     }
 }
 
-void HomoMedium::sample_scatter(const Point3f &p, const Vector3f &wo, Sampler &sampler, MediumInScatter &mis) {
+void HomoMedium::sample_scatter(const Point3f &p, const Vector3f &wo,
+                                Sampler &sampler, MediumInScatter &mis) {
     float pdf = 1.0f;
     mis.wi = phase_->sample(wo, sampler, &pdf);
     // \int p_{scatter}L d\omega: MCS: p_{scatter}L / p(sampling)
@@ -46,3 +51,12 @@ void HomoMedium::sample_scatter(const Point3f &p, const Vector3f &wo, Sampler &s
 float HomoMedium::scatter_phase(const Vector3f &wo, const Vector3f &wi) {
     return phase_->phase(wo, wi);
 }
+
+HomoMedium::HomoMedium(const Json &json) {
+    float g = fetchRequired<float>(json, "g");
+    phase_ = std::make_unique<PhaseHG>(PhaseHG(g));
+    sigma_t_ = fetchRequired<Spectrum>(json, "sigma_t");
+    sigma_s_ = fetchRequired<Spectrum>(json, "sigma_s");
+}
+
+REGISTER_CLASS(HomoMedium, "homomedium")

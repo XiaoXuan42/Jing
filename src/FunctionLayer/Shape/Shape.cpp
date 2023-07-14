@@ -3,6 +3,9 @@
 #include <FunctionLayer/Material/Matte.h>
 #include <FunctionLayer/Material/Mirror.h>
 
+#include "FunctionLayer/Ray/Ray.h"
+#include "ResourceLayer/JsonUtil.h"
+
 Shape::Shape(const Json &json) {
     if (json.contains("transform")) {
         Vector3f translate = fetchOptional(json["transform"], "translate",
@@ -27,9 +30,19 @@ Shape::Shape(const Json &json) {
     } else {
         material = std::make_shared<MatteMaterial>();
     }
-    // TODO: medium
+
     medium_inside = nullptr;
     medium_outside = nullptr;
+    if (json.contains("medium")) {
+        if (json["medium"].contains("inside")) {
+            medium_inside = Factory::construct_class_unique<Medium>(
+                json["medium"]["inside"]);
+        }
+        if (json["medium"].contains("outside")) {
+            medium_outside = Factory::construct_class_unique<Medium>(
+                json["medium"]["outside"]);
+        }
+    }
 }
 
 void UserShapeBound(const RTCBoundsFunctionArguments *args) {

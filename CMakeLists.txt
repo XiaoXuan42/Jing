@@ -61,6 +61,7 @@ add_executable(Moer
   src/FunctionLayer/Material/Conductor.cpp
   src/FunctionLayer/Material/Dielectric.cpp
   src/FunctionLayer/Material/OrenNayar.cpp
+  src/FunctionLayer/Medium/HomoMedium.cpp
   src/FunctionLayer/Sampler/IndependentSampler.cpp
   src/ResourceLayer/Image.cpp
   src/ResourceLayer/Mesh.cpp

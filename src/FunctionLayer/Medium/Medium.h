@@ -13,9 +13,9 @@ public:
     virtual float phase(const Vector3f &wo, const Vector3f &wi) = 0;
 };
 
-class PhaseHG {
+class PhaseHG : public PhaseFunction {
 public:
-    PhaseHG(float g) : g(g) {}
+    explicit PhaseHG(float g) : g(g) {}
     Vector3f sample(const Vector3f &wo, Sampler &sampler, float *pdf) {
         // ref: pbrt
         // cos\theta = \frac{1}{2g}((\frac{1-g^2}{-2gx + g + 1})^2 - 1 - g^2)
@@ -71,5 +71,5 @@ public:
                                 MediumIntersection &mit) = 0;
     virtual void sample_scatter(const Point3f &p, const Vector3f &wo,
                                 Sampler &sampler, MediumInScatter &mis) = 0;
-    virtual float scatter_phase(const Vector3f &wo, const Vector3f &wi);
+    virtual float scatter_phase(const Vector3f &wo, const Vector3f &wi) = 0;
 };

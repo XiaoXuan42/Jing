@@ -3,7 +3,7 @@
 #include "CoreLayer/ColorSpace/Spectrum.h"
 #include "CoreLayer/Math/Geometry.h"
 #include "FunctionLayer/Shape/Intersection.h"
-#include "Medium.h"
+#include "FunctionLayer/Medium/Medium.h"
 #include "ResourceLayer/JsonUtil.h"
 
 #include <memory>

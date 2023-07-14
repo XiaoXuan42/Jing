@@ -35,7 +35,7 @@ public:
             std::cerr << "Fatal, unknown type " << type << std::endl;
             std::exit(1);
         }
-        T* p = static_cast<T*>(getMap()[type](json));
+        T *p = static_cast<T *>(getMap()[type](json));
         return std::unique_ptr<T>(p);
     }
 

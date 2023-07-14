@@ -2,7 +2,7 @@
 #include <CoreLayer/ColorSpace/Spectrum.h>
 #include <FunctionLayer/Shape/Intersection.h>
 
-enum class BSDFType { Diffuse, Specular, GlossyReflection, GlossyTransmission };
+enum class BSDFType { Diffuse, Specular, GlossyReflection, GlossyTransmission, Transmission };
 
 struct BSDFSampleResult {
     Spectrum weight;

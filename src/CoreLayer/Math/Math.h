@@ -4,3 +4,8 @@
 #include "Distribution.h"
 #include "Function.h"
 #include "Geometry.h"
+
+
+namespace nsMath {
+
+}

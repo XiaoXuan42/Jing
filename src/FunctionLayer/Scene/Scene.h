@@ -12,7 +12,7 @@ public:
     ~Scene() = default;
 
     std::optional<SurfaceIntersection> rayIntersect(Ray &ray) const;
-    Spectrum Tr(const Ray &ray) const;
+    Spectrum Tr(const Ray &ray, Sampler &sampler) const;
 
     std::shared_ptr<Light> sampleLight(float sample, float *pdf) const;
 

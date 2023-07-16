@@ -61,15 +61,15 @@ private:
 
 struct MediumInScatter {
     Vector3f wi;
-    Spectrum beta;
+    Spectrum weight;
 };
 
 class Medium {
 public:
-    virtual Spectrum Tr(const Point3f &p, const Vector3f &w, float t) = 0;
-    virtual void sample_forward(const Ray &ray, Sampler &sampler,
-                                MediumIntersection &mit) = 0;
-    virtual void sample_scatter(const Point3f &p, const Vector3f &wo,
-                                Sampler &sampler, MediumInScatter &mis) = 0;
+    virtual Spectrum Tr(const Point3f &p, const Vector3f &w, float t, Sampler &sampler) = 0;
+    virtual MediumIntersection sample_forward(const Ray &ray,
+                                              Sampler &sampler) = 0;
+    virtual MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,
+                                           Sampler &sampler) = 0;
     virtual float scatter_phase(const Vector3f &wo, const Vector3f &wi) = 0;
 };

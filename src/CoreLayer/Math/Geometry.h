@@ -83,7 +83,7 @@ public:
 public:
     friend float dot(const Vector3f &v1, const Vector3f &v2);
     friend Vector3f cross(const Vector3f &v1, const Vector3f &v2);
-    friend class Point3f;
+    friend struct Point3f;
 
 private:
     Vector3f(const vecmat::vec3f &vec) : xyz(vec) {}
@@ -156,9 +156,14 @@ public:
         fflush(stdout);
     }
 
+    Point3f floor() const {
+        return Point3f(std::floor(xyz[0]), std::floor(xyz[1]),
+                       std::floor(xyz[2]));
+    }
+
     //* 友函数/类声明
 public:
-    friend class Vector3f;
+    friend struct Vector3f;
 
 private:
     Point3f(const vecmat::vec3f &vec) : xyz(vec) {}

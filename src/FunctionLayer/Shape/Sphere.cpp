@@ -50,12 +50,12 @@ bool Sphere::rayIntersectShape(Ray &ray, int *primID, float *u,
     return hit;
 }
 
-void Sphere::fillIntersection(float distance, int primID, float u, float v,
+void Sphere::fillIntersection(float t, int primID, float u, float v,
                               SurfaceIntersection *intersection) const {
     // u->phi, v->theta
 
     intersection->shape = this;
-    intersection->distance = distance;
+    intersection->t = t;
     Vector3f normal = Vector3f{std::sin(v) * std::sin(u), std::cos(v),
                                std::sin(v) * std::cos(u)};
 

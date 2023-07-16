@@ -22,7 +22,7 @@ struct Ray {
         direction = normalize(o2d);
     }
 
-    Point3f at(float distance) const { return origin + distance * direction; }
+    Point3f at(float t) const { return origin + t * direction; }
 
     //* 基本参数
     Point3f origin;

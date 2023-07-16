@@ -22,9 +22,14 @@ public:
     //* 当对C应用该Transform后，toWorld返回vector发生变换后的世界坐标系表达
     Vector3f toWorld(const Vector3f &vector) const;
 
+    //* vector是世界坐标系的一个向量
+    Vector3f toLocal(const Vector3f &vector) const;
+
     //* point是坐标系C中的一个局部点（即point在C中不发生相对变换）
     //* 当对C应用该Transform后，toWorld返回point发生变换后的世界坐标系表达
     Point3f toWorld(const Point3f &point) const;
+
+    Point3f toLocal(const Point3f &vector) const;
 
     //*
     //* 对包围盒进行变换

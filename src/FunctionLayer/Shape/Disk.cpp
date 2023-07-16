@@ -60,7 +60,7 @@ void Disk::fillIntersection(float distance, int primID, float u, float v,
     //* Write your code here.
     /// ----------------------------------------------------
     intersection->shape = this;
-    intersection->distance = distance;
+    intersection->t = distance;
     intersection->texCoord = Vector2f{u, v};
 
     Point3f position;

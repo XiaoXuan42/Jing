@@ -10,12 +10,11 @@ class Shape;
 class Medium;
 
 struct Intersection {
-    float distance;    // 从光线起点到交点的距离
+    float t;           // 从光线起点到交点的距离
     Point3f position;  // 交点的位置
 
     void debugPrint() {
-        printf("%f, (%f,%f,%f)\n", distance, position[0], position[1],
-               position[2]);
+        printf("%f, (%f,%f,%f)\n", t, position[0], position[1], position[2]);
     }
 };
 
@@ -41,7 +40,7 @@ struct SurfaceIntersection : public Intersection {
 };
 
 struct MediumIntersection : public Intersection {
-    Spectrum beta;
+    Spectrum weight;
 };
 
 inline void computeRayDifferentials(SurfaceIntersection *intersection,

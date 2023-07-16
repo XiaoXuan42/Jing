@@ -26,7 +26,7 @@ struct ShadowRay {
 
 Spectrum directLighting(const Scene &scene, const Intersection &its,
                         LightSampleResult &res, float sample_pdf,
-                        Medium *medium);
+                        Medium *medium, Sampler &sampler);
 
 Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
                            std::shared_ptr<Sampler> sampler) const {
@@ -45,7 +45,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
     while (true) {
         if (!itsOpt.has_value()) {
             for (auto light : scene.infiniteLights) {
-                Spectrum tr = scene.Tr(ray);
+                Spectrum tr = scene.Tr(ray, *sampler);
                 L += throughput * tr * light->evaluateEmission(ray);
             }
             break;
@@ -61,7 +61,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
                 Spectrum lighting = light->evaluateEmission(sit, wo);
                 Ray shadowRay = ray;
                 shadowRay.tFar -= EPSILON;
-                Spectrum tr = scene.Tr(shadowRay);
+                Spectrum tr = scene.Tr(shadowRay, *sampler);
                 L += throughput * tr * lighting;
             }
         }
@@ -75,10 +75,10 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
         MediumIntersection mit;
         medium = ray.medium;
         if (medium) {
-            medium->sample_forward(ray, *sampler, mit);
-            throughput *= mit.beta;
+            mit = medium->sample_forward(ray, *sampler);
+            throughput *= mit.weight;
 
-            if (mit.distance < ray.tFar) {
+            if (mit.t < ray.tFar) {
                 hit = false;
                 its = mit;
             }
@@ -100,7 +100,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
                 init_medium = medium;
             }
             Spectrum lightSpec =
-                directLighting(scene, its, res, 1.0f, init_medium);
+                directLighting(scene, its, res, 1.0f, init_medium, *sampler);
             if (!lightSpec.isZero()) {
                 if (hit) {
                     Spectrum f = bsdf->f(wo, wi);
@@ -123,7 +123,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
                 init_medium = medium;
             }
             Spectrum lightSpec =
-                directLighting(scene, its, res, pdfLight, init_medium);
+                directLighting(scene, its, res, pdfLight, init_medium, *sampler);
             if (!lightSpec.isZero()) {
                 if (hit) {
                     Spectrum f = bsdf->f(wo, wi);
@@ -153,9 +153,9 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
             specularBounce = bsdf_sample_result.type == BSDFType::Specular;
         } else {
             // scatter
-            MediumInScatter mis;
-            medium->sample_scatter(mit.position, wo, *sampler, mis);
-            throughput *= mis.beta;
+            MediumInScatter mis =
+                medium->sample_scatter(mit.position, wo, *sampler);
+            throughput *= mis.weight;
 
             ray = Ray(mit.position, mis.wi);
             ray.medium = medium;
@@ -170,11 +170,11 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
 
 Spectrum directLighting(const Scene &scene, const Intersection &its,
                         LightSampleResult &res, float sample_pdf,
-                        Medium *medium) {
+                        Medium *medium, Sampler &sampler) {
     Ray ray(its.position, res.direction, 1e-4f, res.distance);
     ray.medium = medium;
 
-    Spectrum tr = scene.Tr(ray);
+    Spectrum tr = scene.Tr(ray, sampler);
     Spectrum spec(0.0f);
     if (!tr.isZero()) {
         res.pdf *= sample_pdf;

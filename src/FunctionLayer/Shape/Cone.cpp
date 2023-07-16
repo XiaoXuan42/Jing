@@ -65,7 +65,7 @@ bool Cone::rayIntersectShape(Ray &ray, int *primID, float *u, float *v) const {
     return test_set(tfar, 1);
 }
 
-void Cone::fillIntersection(float distance, int primID, float u, float v,
+void Cone::fillIntersection(float t, int primID, float u, float v,
                             SurfaceIntersection *intersection) const {
     /// ----------------------------------------------------
     //* 填充圆锥相交信息中的法线以及相交位置信息
@@ -75,7 +75,7 @@ void Cone::fillIntersection(float distance, int primID, float u, float v,
     /// ----------------------------------------------------
 
     intersection->shape = this;
-    intersection->distance = distance;
+    intersection->t = t;
     intersection->texCoord = Vector2f{u, v};
 
     Point3f position;

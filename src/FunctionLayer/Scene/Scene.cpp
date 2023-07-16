@@ -56,7 +56,7 @@ std::optional<SurfaceIntersection> Scene::rayIntersect(Ray &ray) const {
     return acceleration->rayIntersect(ray);
 }
 
-Spectrum Scene::Tr(const Ray &const_ray) const {
+Spectrum Scene::Tr(const Ray &const_ray, Sampler &sampler) const {
     Spectrum tr(1.0);
     Ray ray = const_ray;
 
@@ -71,10 +71,10 @@ Spectrum Scene::Tr(const Ray &const_ray) const {
             return Spectrum(0.0f);
         }
         if (ray.medium) {
-            tr *= ray.medium->Tr(ray.origin, ray.direction, its.distance);
+            tr *= ray.medium->Tr(ray.origin, ray.direction, its.t, sampler);
         }
         ray = Ray(ray.origin + 1e-4 * ray.direction, ray.direction, 1e-4f,
-                  ray.tFar - its.distance);
+                  ray.tFar - its.t);
         ray.medium = its.getMedium(ray.direction);
     }
     return tr;

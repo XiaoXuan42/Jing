@@ -57,11 +57,11 @@ bool Parallelogram::rayIntersectShape(Ray &ray, int *primID, float *u,
     return false;
 }
 
-void Parallelogram::fillIntersection(float distance, int primID, float u,
+void Parallelogram::fillIntersection(float t, int primID, float u,
                                      float v,
                                      SurfaceIntersection *intersection) const {
     intersection->shape = this;
-    intersection->distance = distance;
+    intersection->t = t;
     intersection->normal = normalize(cross(edge0, edge1));
     intersection->texCoord = Vector2f{u, v};
     intersection->position = base + u * edge0 + v * edge1;

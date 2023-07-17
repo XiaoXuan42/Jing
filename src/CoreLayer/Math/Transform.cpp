@@ -2,6 +2,25 @@
 
 #include "CoreLayer/Math/Geometry.h"
 
+Transform::Transform(const Json &json) {
+    Vector3f otranslate =
+        fetchOptional(json, "translate", Vector3f{0.f, 0.f, 0.f});
+    Vector3f oscale =
+        fetchOptional(json, "scale", Vector3f{1.f, 1.f, 1.f});
+
+    Matrix4f otranslateMat = Transform::translation(otranslate);
+    Matrix4f oscaleMat = Transform::scalation(oscale);
+    Matrix4f orotateMat = Matrix4f::identity();
+    if (json.contains("rotate")) {
+        Vector3f axis =
+            fetchRequired<Vector3f>(json["rotate"], "axis");
+        float radian =
+            fetchRequired<float>(json["rotate"], "radian");
+        orotateMat = Transform::rotation(axis, radian);
+    }
+    *this = Transform(otranslateMat, orotateMat, oscaleMat);
+}
+
 Matrix4f Transform::translation(const Vector3f &offset) {
     Matrix4f mat = Matrix4f::identity();
     for (int i = 0; i < 3; ++i) {

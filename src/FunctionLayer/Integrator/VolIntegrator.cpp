@@ -122,8 +122,8 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
             } else {
                 init_medium = medium;
             }
-            Spectrum lightSpec =
-                directLighting(scene, its, res, pdfLight, init_medium, *sampler);
+            Spectrum lightSpec = directLighting(scene, its, res, pdfLight,
+                                                init_medium, *sampler);
             if (!lightSpec.isZero()) {
                 if (hit) {
                     Spectrum f = bsdf->f(wo, wi);

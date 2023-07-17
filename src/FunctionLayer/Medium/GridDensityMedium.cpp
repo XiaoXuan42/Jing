@@ -1,8 +1,62 @@
 #include "GridDensityMedium.h"
 
+#include <algorithm>
+#include <fstream>
+#include <memory>
+#include <string>
+
 #include "CoreLayer/ColorSpace/Spectrum.h"
 #include "CoreLayer/Math/Geometry.h"
+#include "FunctionLayer/Medium/Medium.h"
 #include "FunctionLayer/Shape/Intersection.h"
+#include "ResourceLayer/Factory.h"
+#include "ResourceLayer/FileUtil.h"
+#include "ResourceLayer/JsonUtil.h"
+
+GridDensityMedium::GridDensityMedium(const Json &json) {
+    float g = fetchRequired<float>(json, "g");
+    phase_ = std::make_unique<PhaseHG>(g);
+
+    std::string file = fetchRequired<std::string>(json, "file");
+    file = FileUtil::getFullPath(file);
+    std::ifstream in;
+    in.open(file, std::ios::binary);
+    if (!in.is_open()) {
+        std::cerr << "Error: Can't open " << file;
+        exit(-1);
+    }
+    int nx, ny, nz;
+    in.read((char *)(&nx), sizeof(int));
+    in.read((char *)(&ny), sizeof(int));
+    in.read((char *)(&nz), sizeof(int));
+    std::unique_ptr<float[]> data = std::make_unique<float[]>(nx * ny * nz);
+    in.read((char *)(data.get()), nx * ny * nz * sizeof(float));
+    in.close();
+    nx_ = nx;
+    ny_ = ny;
+    nz_ = nz;
+    nynz_ = ny * nz;
+    density_ = std::move(data);
+    float max_density =
+        *std::max_element(density_.get(), density_.get() + nx * ny * nz);
+    invMaxDensity_ = 1.0f / max_density;
+
+    sigma_a_ = fetchRequired<Spectrum>(json, "sigma_a");
+    sigma_s_ = fetchRequired<Spectrum>(json, "sigma_s");
+    sigma_t_ = sigma_a_[0] + sigma_s_[0];
+    for (int i = 1; i < Spectrum::cntChannel(); ++i) {
+        if (sigma_t_ != sigma_a_[i] + sigma_s_[i]) {
+            std::cerr << "Error: Sigma_t of GridDensityMedium must be equal in "
+                         "all channels"
+                      << std::endl;
+            exit(-1);
+        }
+    }
+
+    if (json.contains("transform")) {
+        transform_ = Transform(json["transform"]);
+    }
+}
 
 float GridDensityMedium::triLearp(const Point3f &pGrid) const {
     int fx = std::floor(pGrid[0]), fy = std::floor(pGrid[1]),
@@ -65,3 +119,5 @@ Spectrum GridDensityMedium::Tr(const Point3f &p, const Vector3f &w, float tMax,
     }
     return Spectrum(tr);
 }
+
+REGISTER_CLASS(GridDensityMedium, "gridDensityMedium")

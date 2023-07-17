@@ -1,6 +1,9 @@
 #pragma once
+
 #include "FunctionLayer/Acceleration/AABB.h"
 #include "Geometry.h"
+#include "ResourceLayer/JsonUtil.h"
+
 //* 三维空间中的旋转、缩放、平移操作均可以用一个4x4的矩阵进行描述，Transform对象描述了如何对一个物体在三维空间上进行变换
 //* Transform是对4维方阵的高层次抽象，只关心旋转、缩放、平移操作
 struct Transform {
@@ -17,6 +20,8 @@ public:
 
     Transform(const Matrix4f &_translation, const Matrix4f &_rotation,
               const Matrix4f &_scalation);
+
+    explicit Transform(const Json &json);
 
     //* vector是坐标系C中的一个局部向量（即vector在C中不发生相对变换）
     //* 当对C应用该Transform后，toWorld返回vector发生变换后的世界坐标系表达

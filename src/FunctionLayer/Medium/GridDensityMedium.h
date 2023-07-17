@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CoreLayer/ColorSpace/Spectrum.h"
 #include "CoreLayer/Math/Constant.h"
 #include "CoreLayer/Math/Transform.h"
 #include "FunctionLayer/Shape/Intersection.h"
@@ -8,10 +9,12 @@
 
 class GridDensityMedium : public Medium {
 public:
-    GridDensityMedium(const Transform &transform, const Spectrum &sigma_a,
+    GridDensityMedium(std::unique_ptr<PhaseFunction> phase,
+                      const Transform &transform, const Spectrum &sigma_a,
                       const Spectrum &sigma_s, int nx, int ny, int nz,
                       std::unique_ptr<float[]> d)
-        : sigma_a_(sigma_a),
+        : phase_(std::move(phase)),
+          sigma_a_(sigma_a),
           sigma_s_(sigma_s),
           nx_(nx),
           ny_(ny),
@@ -59,14 +62,25 @@ public:
     MediumIntersection sample_forward(const Ray &ray,
                                       Sampler &sampler) override;
     MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,
-                                   Sampler &sampler) override;
-    float scatter_phase(const Vector3f &wo, const Vector3f &wi) override;
+                                   Sampler &sampler) override {
+        MediumInScatter mis;
+        float pdf = 1.0f;
+        mis.wi = phase_->sample(wo, sampler, &pdf);
+        float scale = phase_->phase(wo, mis.wi) / pdf;
+        mis.weight = Spectrum(scale);
+        return mis;
+    }
+    float scatter_phase(const Vector3f &wo, const Vector3f &wi) override {
+        return phase_->phase(wo, wi);
+    }
 
 private:
-    const Spectrum sigma_a_, sigma_s_;
+    std::unique_ptr<PhaseFunction> phase_;
+
+    Spectrum sigma_a_, sigma_s_;
     float sigma_t_;
-    const int nx_, ny_, nz_;
-    const int nynz_;
+    int nx_, ny_, nz_;
+    int nynz_;
     Transform transform_;
     std::unique_ptr<float[]> density_;
     float invMaxDensity_;

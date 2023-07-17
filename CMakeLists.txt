@@ -63,6 +63,7 @@ add_executable(Moer
   src/FunctionLayer/Material/OrenNayar.cpp
   src/FunctionLayer/Material/Empty.cpp
   src/FunctionLayer/Medium/HomoMedium.cpp
+  src/FunctionLayer/Medium/GridDensityMedium.cpp
   src/FunctionLayer/Sampler/IndependentSampler.cpp
   src/ResourceLayer/Image.cpp
   src/ResourceLayer/Mesh.cpp

@@ -64,17 +64,13 @@ int main(int argc, char **argv) {
         int x = i - y * width;
         Vector2f NDC{(float)x / width, (float)y / height};
         Spectrum li(.0f);
-        for (int i = 0; i < spp; ++i) {
+        for (int j = 0; j < spp; ++j) {
             Ray ray = camera->sampleRayDifferentials(
                 CameraSample{sampler->next2D()}, NDC);
             li += integrator->li(ray, *scene, sampler);
         }
         camera->film->deposit({x, y}, li / spp);
-        if (i % 5 == 0) {
-            printProgress((float)i / (height * width));
-        }
     }
-    printProgress(1.f);
 #endif
 
     auto end = std::chrono::system_clock::now();

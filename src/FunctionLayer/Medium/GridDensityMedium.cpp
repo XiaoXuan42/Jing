@@ -41,6 +41,9 @@ GridDensityMedium::GridDensityMedium(const Json &json) {
     density_ = std::move(data);
     float max_density =
         *std::max_element(density_.get(), density_.get() + nx * ny * nz);
+    if (max_density == 0) {
+        max_density = 0.0001;
+    }
     invMaxDensity_ = 1.0f / max_density;
 
     sigma_a_ = fetchRequired<Spectrum>(json, "sigma_a");
@@ -80,15 +83,17 @@ float GridDensityMedium::triLearp(const Point3f &pGrid) const {
 }
 
 /**
-将世界坐标系下的原点、方向转换成单位正方体下的原点、方向，使得oldOrig + t*oldDir的
-对应单位正方体的坐标的origin + t*dir。
+将世界坐标系下的原点、方向转换成单位正方体下的原点、方向，使得oldOrig +
+t*oldDir的 对应单位正方体的坐标的origin + t*dir。
 */
 inline void toLocalOriginDir(const Point3f &oldOrig, const Vector3f &oldDir,
                              const Transform &transform, Point3f &origin,
                              Vector3f &dir) {
-    // 为了和Cube的transform的定义一致，transform的scale和translation指的是针对[-1, 1]^3而言的。
+    // 为了和Cube的transform的定义一致，transform的scale和translation指的是针对[-1,
+    // 1]^3而言的。
     vecmat::vec4f hlocalOrigin = {oldOrig[0], oldOrig[1], oldOrig[2], 1.0f};
-    hlocalOrigin = transform.invScale * transform.invRotate * transform.invTranslate * hlocalOrigin;
+    hlocalOrigin = transform.invScale * transform.invRotate *
+                   transform.invTranslate * hlocalOrigin;
     hlocalOrigin /= hlocalOrigin[3];
     origin = {hlocalOrigin[0], hlocalOrigin[1], hlocalOrigin[2]};
     origin = origin + Vector3f(1.0, 1.0, 1.0);

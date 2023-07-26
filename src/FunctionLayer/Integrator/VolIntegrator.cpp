@@ -19,7 +19,6 @@
 #include "FunctionLayer/Shape/Intersection.h"
 #include "ResourceLayer/JsonUtil.h"
 
-
 Spectrum directLighting(const Scene &scene, const Intersection &its,
                         LightSampleResult &res, float sample_pdf,
                         Medium *medium, Sampler &sampler);
@@ -132,10 +131,10 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
         }
 
         // ruassian roulette
-        if (depth > 2 && sampler->next1D() > 0.95f) {
+        if (depth > 2 && sampler->next1D() > roulette_) {
             break;
         }
-        throughput /= 0.95f;
+        throughput /= roulette_;
 
         // 下一步光线的方向
         if (hit) {
@@ -182,6 +181,11 @@ Spectrum directLighting(const Scene &scene, const Intersection &its,
 
 VolIntegrator::VolIntegrator(const Json &json) {
     maxDepth = fetchRequired<uint32_t>(json, "maxDepth");
+    if (json.contains("roulette")) {
+        roulette_ = fetchRequired<float>(json, "roulette");
+    } else {
+        roulette_ = 1.0f;
+    }
 }
 
 REGISTER_CLASS(VolIntegrator, "vol")

@@ -6,7 +6,9 @@
 #include <string>
 
 #include "CoreLayer/ColorSpace/Spectrum.h"
+#include "CoreLayer/Math/Constant.h"
 #include "CoreLayer/Math/Geometry.h"
+#include "CoreLayer/Math/Transform.h"
 #include "FunctionLayer/Medium/Medium.h"
 #include "FunctionLayer/Shape/Intersection.h"
 #include "ResourceLayer/Factory.h"
@@ -77,8 +79,34 @@ float GridDensityMedium::triLearp(const Point3f &pGrid) const {
     return val;
 }
 
+/**
+将世界坐标系下的原点、方向转换成单位正方体下的原点、方向，使得oldOrig + t*oldDir的
+对应单位正方体的坐标的origin + t*dir。
+*/
+inline void toLocalOriginDir(const Point3f &oldOrig, const Vector3f &oldDir,
+                             const Transform &transform, Point3f &origin,
+                             Vector3f &dir) {
+    // 为了和Cube的transform的定义一致，transform的scale和translation指的是针对[-1, 1]^3而言的。
+    vecmat::vec4f hlocalOrigin = {oldOrig[0], oldOrig[1], oldOrig[2], 1.0f};
+    hlocalOrigin = transform.invScale * transform.invRotate * transform.invTranslate * hlocalOrigin;
+    hlocalOrigin /= hlocalOrigin[3];
+    origin = {hlocalOrigin[0], hlocalOrigin[1], hlocalOrigin[2]};
+    origin = origin + Vector3f(1.0, 1.0, 1.0);
+    for (int i = 0; i < 3; ++i) {
+        origin[i] *= 0.5f;
+    }
+    vecmat::vec4f hlocalDir = {oldDir[0], oldDir[1], oldDir[2], 0.0f};
+    hlocalDir = transform.invScale * transform.invRotate * hlocalDir;
+    dir = {hlocalDir[0], hlocalDir[1], hlocalDir[2]};
+}
+
+// p in [0, 1]^3
 float GridDensityMedium::Density(const Point3f &p) const {
-    const Point3f pGrid = Point3f(p[0] * nx_, p[1] * ny_, p[2] * nz_);
+    Point3f cp;
+    for (int i = 0; i < 3; ++i) {
+        cp[i] = std::max(std::min(1 - EPSILON, p[i]), EPSILON);
+    }
+    const Point3f pGrid = Point3f(cp[0] * nx_, cp[1] * ny_, cp[2] * nz_);
     return triLearp(pGrid);
 }
 
@@ -86,6 +114,11 @@ MediumIntersection GridDensityMedium::sample_forward(const Ray &ray,
                                                      Sampler &sampler) {
     MediumIntersection mit;
     float t = ray.tNear;
+
+    Point3f localOrigin;
+    Vector3f localDir;
+    toLocalOriginDir(ray.origin, ray.direction, transform_, localOrigin,
+                     localDir);
 
     while (true) {
         t -= fm::log(1 - sampler.next1D()) * invMaxDensity_ / sigma_t_;
@@ -95,7 +128,8 @@ MediumIntersection GridDensityMedium::sample_forward(const Ray &ray,
             mit.position = ray.at(ray.tFar);
             break;
         }
-        if (Density(ray.at(t)) * invMaxDensity_ > sampler.next1D()) {
+        if (Density(localOrigin + t * localDir) * invMaxDensity_ >
+            sampler.next1D()) {
             mit.weight = sigma_s_ / sigma_t_;
             mit.t = t;
             mit.position = ray.at(t);
@@ -109,12 +143,15 @@ Spectrum GridDensityMedium::Tr(const Point3f &p, const Vector3f &w, float tMax,
                                Sampler &sampler) {
     float tr = 1.0f;
     float t = 0;
+    Point3f localOrigin;
+    Vector3f localDir;
+    toLocalOriginDir(localOrigin, localDir, transform_, localOrigin, localDir);
     while (true) {
         t -= fm::log(1 - sampler.next1D()) * invMaxDensity_ / sigma_t_;
         if (t >= tMax) {
             break;
         }
-        float density = Density(p + w * t);
+        float density = Density(localOrigin + localDir * t);
         tr *= 1 - std::max(0.0f, density * invMaxDensity_);
     }
     return Spectrum(tr);

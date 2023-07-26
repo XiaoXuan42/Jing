@@ -19,10 +19,6 @@
 #include "FunctionLayer/Shape/Intersection.h"
 #include "ResourceLayer/JsonUtil.h"
 
-struct ShadowRay {
-    Vector3f wi;
-    Spectrum spec;
-};
 
 Spectrum directLighting(const Scene &scene, const Intersection &its,
                         LightSampleResult &res, float sample_pdf,

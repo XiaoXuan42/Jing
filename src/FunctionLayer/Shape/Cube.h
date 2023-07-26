@@ -5,7 +5,7 @@ class Cube : public Shape {
 public:
     Cube() = delete;
 
-    Cube(const Json &json);
+    explicit Cube(const Json &json);
 
     virtual bool rayIntersectShape(Ray &ray, int *primID, float *u,
                                    float *v) const override;

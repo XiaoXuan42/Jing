@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreLayer/ColorSpace/Spectrum.h"
-#include "CoreLayer/Math/Constant.h"
 #include "CoreLayer/Math/Transform.h"
 #include "FunctionLayer/Shape/Intersection.h"
 #include "Medium.h"
@@ -41,16 +40,6 @@ public:
     }
     explicit GridDensityMedium(const Json &json);
 
-    // 为了和cube shape保持一致，transform后的坐标是在[-1.0, 1.0]^3区间的。
-    Point3f toGrid(const Point3f &p) const {
-        auto cube_coor = transform_.toLocal(p);
-        for (int i = 0; i < 3; ++i) {
-            cube_coor[i] = (cube_coor[i] + 1.0f) * 0.5f;
-            cube_coor[i] = std::max(EPSILON, cube_coor[i]);
-            cube_coor[i] = std::min(1.0f - EPSILON, cube_coor[i]);
-        }
-        return cube_coor;
-    }
     float queryDensity(int i, int j, int k) const {
         return density_.get()[i * nynz_ + j * nz_ + k];
     }

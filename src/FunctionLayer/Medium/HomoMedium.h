@@ -18,7 +18,8 @@ public:
           sigma_s_(sigma_s),
           sigma_t_(sigma_a + sigma_s) {}
 
-    virtual Spectrum Tr(const Point3f &p, const Vector3f &w, float t, Sampler &sampler) override;
+    virtual Spectrum Tr(const Point3f &p, const Vector3f &w, float t,
+                        Sampler &sampler) override;
     virtual MediumIntersection sample_forward(const Ray &ray,
                                               Sampler &sampler) override;
     virtual MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,

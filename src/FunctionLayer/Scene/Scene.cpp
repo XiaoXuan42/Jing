@@ -61,6 +61,7 @@ Spectrum Scene::Tr(const Ray &const_ray, Sampler &sampler) const {
     Ray ray = const_ray;
 
     while (true) {
+        const float oldtFar = ray.tFar;
         auto itsOpt = acceleration->rayIntersect(ray);
         if (!itsOpt.has_value()) {
             break;
@@ -73,8 +74,11 @@ Spectrum Scene::Tr(const Ray &const_ray, Sampler &sampler) const {
         if (ray.medium) {
             tr *= ray.medium->Tr(ray.origin, ray.direction, its.t, sampler);
         }
+        if (tr.isZero()) {
+            break;
+        }
         ray = Ray(ray.origin + 1e-4 * ray.direction, ray.direction, 1e-4f,
-                  ray.tFar - its.t);
+                  oldtFar - its.t);
         ray.medium = its.getMedium(ray.direction);
     }
     return tr;

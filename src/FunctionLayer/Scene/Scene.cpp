@@ -77,7 +77,8 @@ Spectrum Scene::Tr(const Ray &const_ray, Sampler &sampler) const {
         if (tr.isZero()) {
             break;
         }
-        ray = Ray(its.position + 1e-4 * ray.direction, ray.direction, 1e-4f, oldtFar - its.t);
+        ray = Ray(its.position + 1e-4 * ray.direction, ray.direction, 1e-4,
+                  oldtFar - its.t - 1e-4);
         ray.medium = its.getMedium(ray.direction);
     }
     return tr;

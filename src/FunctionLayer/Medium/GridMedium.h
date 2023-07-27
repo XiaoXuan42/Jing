@@ -31,7 +31,7 @@ public:
         hlocalOrigin = transform_.invScale * transform_.invRotate *
                        transform_.invTranslate * hlocalOrigin;
         hlocalOrigin /= hlocalOrigin[3];
-        return Point3f(hlocalOrigin[0], hlocalOrigin[2], hlocalOrigin[3]);
+        return Point3f(hlocalOrigin[0], hlocalOrigin[1], hlocalOrigin[2]);
     }
     void toSampleCoor(Point3f &p) const {
         for (int i = 0; i < 3; ++i) {

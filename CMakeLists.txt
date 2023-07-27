@@ -53,7 +53,7 @@ if(APPLE)
   set(EMBREE_DLL ${LIBS_PATH}/libembree3.3.dylib ${LIBS_PATH}/libtbb.12.2.dylib)
 endif()
 
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
+if (NOT (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   FIND_PACKAGE(OpenMP REQUIRED)
   if (OPENMP_FOUND)
     message("OPENMP FOUND")

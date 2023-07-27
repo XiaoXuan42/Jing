@@ -20,17 +20,6 @@
 #include <omp.h>
 #endif
 
-#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-#define PBWIDTH 60
-
-inline void printProgress(float percentage) {
-    int val = (int)(percentage * 100);
-    int lpad = (int)(percentage * PBWIDTH);
-    int rpad = PBWIDTH - lpad;
-    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
-    fflush(stdout);
-}
-
 int main(int argc, char **argv) {
     openvdb::initialize();
     const std::string sceneDir = std::string(argv[1]);

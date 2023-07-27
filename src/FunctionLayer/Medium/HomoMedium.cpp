@@ -10,7 +10,7 @@
 #include "ResourceLayer/Factory.h"
 #include "ResourceLayer/JsonUtil.h"
 
-Spectrum HomoMedium::Tr(const Point3f &p, const Vector3f &w, float t,
+Spectrum HomoMedium::Tr(const Point3f &p, const Vector3f &dir, float t,
                         Sampler &sampler) {
     Spectrum tr(0.0);
     for (int i = 0; i < Spectrum::cntChannel(); ++i) {

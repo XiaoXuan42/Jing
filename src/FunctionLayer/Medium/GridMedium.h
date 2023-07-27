@@ -1,25 +1,61 @@
 #pragma once
 
+#include <openvdb/openvdb.h>
+
 #include "CoreLayer/ColorSpace/Spectrum.h"
 #include "CoreLayer/Math/Transform.h"
 #include "FunctionLayer/Shape/Intersection.h"
 #include "Medium.h"
 #include "ResourceLayer/JsonUtil.h"
 
-class GridDensityMedium : public Medium {
+// 和Cube一样，grid默认是中心位于(0, 0,
+// 0)处，棱长为2的AABB，但是采样的时候会平移放缩到[0, 1]^3
+class GridMedium : public Medium {
+public:
+    explicit GridMedium(const Transform &transform) : transform_(transform) {}
+    virtual ~GridMedium() = default;
+    explicit GridMedium(const Json &json) {
+        if (json.contains("transform")) {
+            transform_ = Transform(json["transform"]);
+        }
+    }
+
+    Vector3f toLocal(const Vector3f &d) const {
+        vecmat::vec4f hlocalDir = {d[0], d[1], d[2], 0.0f};
+        hlocalDir = transform_.invScale * transform_.invRotate * hlocalDir;
+        return Vector3f(hlocalDir[0], hlocalDir[1], hlocalDir[2]);
+    }
+    Point3f toLocal(const Point3f &p) const {
+        vecmat::vec4f hlocalOrigin = {p[0], p[1], p[2], 1.0f};
+        hlocalOrigin = transform_.invScale * transform_.invRotate *
+                       transform_.invTranslate * hlocalOrigin;
+        hlocalOrigin /= hlocalOrigin[3];
+        return Point3f(hlocalOrigin[0], hlocalOrigin[2], hlocalOrigin[3]);
+    }
+    void toSampleCoor(Point3f &p) const {
+        for (int i = 0; i < 3; ++i) {
+            p[i] = (p[i] + 1.0f) * 0.5f;
+        }
+    }
+
+protected:
+    Transform transform_;
+};
+
+class GridDensityMedium : public GridMedium {
 public:
     GridDensityMedium(std::unique_ptr<PhaseFunction> phase,
                       const Transform &transform, const Spectrum &sigma_a,
                       const Spectrum &sigma_s, int nx, int ny, int nz,
                       std::unique_ptr<float[]> d)
-        : phase_(std::move(phase)),
+        : GridMedium(transform),
+          phase_(std::move(phase)),
           sigma_a_(sigma_a),
           sigma_s_(sigma_s),
           nx_(nx),
           ny_(ny),
           nz_(nz),
           nynz_(ny * nz),
-          transform_(transform),
           density_(std::move(d)) {
         Spectrum sigma_t = sigma_a_ + sigma_s_;
         sigma_t_ = sigma_t[0];
@@ -46,7 +82,7 @@ public:
     float triLearp(const Point3f &pGrid) const;
     // p inside [0, 1]^3
     float Density(const Point3f &p) const;
-    Spectrum Tr(const Point3f &p, const Vector3f &w, float t,
+    Spectrum Tr(const Point3f &p, const Vector3f &dir, float t,
                 Sampler &sampler) override;
     MediumIntersection sample_forward(const Ray &ray,
                                       Sampler &sampler) override;
@@ -70,7 +106,24 @@ private:
     float sigma_t_;
     int nx_, ny_, nz_;
     int nynz_;
-    Transform transform_;
     std::unique_ptr<float[]> density_;
     float invMaxDensity_;
+};
+
+class VDBGridMedium : public GridMedium {
+public:
+    explicit VDBGridMedium(const Json &json);
+
+    virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float t,
+                        Sampler &sampler) override;
+    virtual MediumIntersection sample_forward(const Ray &ray,
+                                              Sampler &sampler) override;
+    virtual MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,
+                                           Sampler &sampler) override;
+    virtual float scatter_phase(const Vector3f &wo,
+                                const Vector3f &wi) override;
+
+private:
+    openvdb::GridBase::Ptr densityGrids_;
+    openvdb::CoordBBox bbox_;
 };

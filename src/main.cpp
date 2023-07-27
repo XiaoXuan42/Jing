@@ -14,6 +14,8 @@
 #include <fstream>
 #include <regex>
 
+#include <openvdb/openvdb.h>
+
 #ifdef MOER_OPENMP
 #include <omp.h>
 #endif
@@ -30,6 +32,7 @@ inline void printProgress(float percentage) {
 }
 
 int main(int argc, char **argv) {
+    openvdb::initialize();
     const std::string sceneDir = std::string(argv[1]);
     FileUtil::setWorkingDirectory(sceneDir);
     std::string sceneJsonPath = FileUtil::getFullPath("scene.json");

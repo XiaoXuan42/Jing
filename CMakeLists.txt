@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(Moer-lite LANGUAGES CXX)
+
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
 if(MSVC)
   add_compile_options("/MP")
@@ -23,60 +29,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/target/bin)
 
 add_subdirectory(./externals)
 
-add_executable(Moer
-  src/main.cpp
-
-  src/CoreLayer/Math/Transform.cpp
-
-  src/FunctionLayer/Acceleration/AABB.cpp
-  src/FunctionLayer/Acceleration/Acceleration.cpp
-  src/FunctionLayer/Acceleration/EmbreeBVH.cpp
-  src/FunctionLayer/Acceleration/Linear.cpp
-  src/FunctionLayer/Acceleration/Octree.cpp
-
-  src/FunctionLayer/Integrator/NormalIntegrator.cpp
-  src/FunctionLayer/Integrator/DirectIntegrator.cpp
-  src/FunctionLayer/Integrator/PathIntegrator.cpp
-  src/FunctionLayer/Integrator/VolIntegrator.cpp
-  src/FunctionLayer/Integrator/WhittedIntegrator.cpp
-  src/FunctionLayer/Camera/Camera.cpp
-  src/FunctionLayer/Camera/Pinhole.cpp
-  src/FunctionLayer/Scene/Scene.cpp
-  src/FunctionLayer/Light/SpotLight.cpp
-  src/FunctionLayer/Light/AreaLight.cpp
-  src/FunctionLayer/Light/EnvironmentLight.cpp
-  src/FunctionLayer/Shape/Shape.cpp
-  src/FunctionLayer/Shape/Triangle.cpp
-  src/FunctionLayer/Shape/Cube.cpp
-  src/FunctionLayer/Shape/Sphere.cpp
-  src/FunctionLayer/Shape/Parallelogram.cpp
-  src/FunctionLayer/Texture/NormalTexture.cpp
-  src/FunctionLayer/Texture/ImageTexture.cpp
-  src/FunctionLayer/Texture/Texture.cpp
-  src/FunctionLayer/Texture/Mipmap.cpp
-  src/FunctionLayer/Material/Matte.cpp
-  src/FunctionLayer/Material/Mirror.cpp
-  src/FunctionLayer/Material/Material.cpp
-  src/FunctionLayer/Material/Phong.cpp
-  src/FunctionLayer/Material/Conductor.cpp
-  src/FunctionLayer/Material/Dielectric.cpp
-  src/FunctionLayer/Material/OrenNayar.cpp
-  src/FunctionLayer/Material/Empty.cpp
-  src/FunctionLayer/Medium/HomoMedium.cpp
-  src/FunctionLayer/Medium/GridDensityMedium.cpp
-  src/FunctionLayer/Sampler/IndependentSampler.cpp
-  src/ResourceLayer/Image.cpp
-  src/ResourceLayer/Mesh.cpp
-  src/ResourceLayer/FileUtil.cpp
-  src/FunctionLayer/Shape/Disk.cpp 
-  src/FunctionLayer/Shape/Disk.h 
-  src/FunctionLayer/Shape/Cone.cpp src/FunctionLayer/Shape/Cone.h 
-  src/FunctionLayer/Shape/Cylinder.cpp 
-  src/FunctionLayer/Shape/Cylinder.h 
-  src/FunctionLayer/Integrator/UVIntegrator.cpp 
-  src/FunctionLayer/Integrator/UVIntegrator.h 
-  src/FunctionLayer/Acceleration/BVH.cpp 
-  src/FunctionLayer/Acceleration/BVH.h)
+file(GLOB_RECURSE MoerSources CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.h)
+add_executable(Moer)
+target_sources(Moer PUBLIC ${MoerSources})
 
 target_include_directories(Moer PUBLIC ./externals)
 target_include_directories(Moer PUBLIC ./src)
@@ -127,6 +82,9 @@ add_custom_command(TARGET Moer POST_BUILD
 
 target_link_libraries(Moer PUBLIC embree3)
 target_link_libraries(Moer PUBLIC tinyobjloader)
+
+find_package(OpenVDB COMPONENTS openvdb REQUIRED)
+target_link_libraries(Moer PUBLIC OpenVDB::openvdb)
 
 if(APPLE)
   execute_process(

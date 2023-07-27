@@ -66,7 +66,7 @@ struct MediumInScatter {
 
 class Medium {
 public:
-    virtual Spectrum Tr(const Point3f &p, const Vector3f &w, float t, Sampler &sampler) = 0;
+    virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float t, Sampler &sampler) = 0;
     virtual MediumIntersection sample_forward(const Ray &ray,
                                               Sampler &sampler) = 0;
     virtual MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,

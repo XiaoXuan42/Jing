@@ -1,6 +1,8 @@
 #include "GridMedium.h"
 
+#include <openvdb/Grid.h>
 #include <openvdb/Types.h>
+#include <openvdb/openvdb.h>
 
 #include <algorithm>
 #include <fstream>
@@ -91,48 +93,14 @@ float GridDensityMedium::Density(const Point3f &p) const {
 
 MediumIntersection GridDensityMedium::sample_forward(const Ray &ray,
                                                      Sampler &sampler) {
-    MediumIntersection mit;
-    float t = ray.tNear;
-
-    Point3f localOrigin = toLocal(ray.origin);
-    toSampleCoor(localOrigin);
-    Vector3f localDir = toLocal(ray.direction);
-
-    while (true) {
-        t -= fm::log(1 - sampler.next1D()) * invMaxDensity_ / sigma_t_;
-        if (t >= ray.tFar) {
-            mit.weight = Spectrum(1.0f);
-            mit.t = ray.tFar;
-            mit.position = ray.at(ray.tFar);
-            break;
-        }
-        if (Density(localOrigin + t * localDir) * invMaxDensity_ >
-            sampler.next1D()) {
-            mit.weight = sigma_s_ / sigma_t_;
-            mit.t = t;
-            mit.position = ray.at(t);
-            break;
-        }
-    }
-    return mit;
+    return DeltaSamplingAlg<GridDensityMedium>::delta_sampling_forward(
+        *this, ray, sigma_s_, invMaxDensity_, sigma_t_, sampler);
 }
 
 Spectrum GridDensityMedium::Tr(const Point3f &p, const Vector3f &dir,
                                float tMax, Sampler &sampler) {
-    float tr = 1.0f;
-    float t = 0;
-    Point3f localOrigin = toLocal(p);
-    toSampleCoor(localOrigin);
-    Vector3f localDir = toLocal(dir);
-    while (true) {
-        t -= fm::log(1 - sampler.next1D()) * invMaxDensity_ / sigma_t_;
-        if (t >= tMax) {
-            break;
-        }
-        float density = Density(localOrigin + localDir * t);
-        tr *= 1 - std::max(0.0f, density * invMaxDensity_);
-    }
-    return Spectrum(tr);
+    return DeltaSamplingAlg<GridDensityMedium>::delta_sampling_tr(
+        *this, p, dir, invMaxDensity_, sigma_t_, tMax, sampler);
 }
 
 REGISTER_CLASS(GridDensityMedium, "gridDensityMedium")
@@ -142,7 +110,9 @@ VDBGridMedium::VDBGridMedium(const Json &json) : GridMedium(json) {
     vdbPath = FileUtil::getFullPath(vdbPath);
     openvdb::io::File file(vdbPath);
     file.open();
-    densityGrids_ = file.readGrid("density");
+    openvdb::GridBase::Ptr pgrid = file.readGrid("density");
+    densityGrids_ = openvdb::gridPtrCast<openvdb::FloatGrid>(pgrid);
+    densityGrids_->getConstAccessor();
     file.close();
     bbox_ = densityGrids_->evalActiveVoxelBoundingBox();
 }

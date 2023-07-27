@@ -3,6 +3,7 @@
 #include <openvdb/openvdb.h>
 
 #include "CoreLayer/ColorSpace/Spectrum.h"
+#include "CoreLayer/Math/Geometry.h"
 #include "CoreLayer/Math/Transform.h"
 #include "FunctionLayer/Shape/Intersection.h"
 #include "Medium.h"
@@ -38,8 +39,66 @@ public:
         }
     }
 
+    // p in [0, 1]^3
+    float Density(const Point3f &p) const { return 0.0f; }
+
 protected:
     Transform transform_;
+};
+
+template <typename T>
+struct DeltaSamplingAlg {
+    static_assert(std::is_base_of_v<GridMedium, T>);
+
+    // ray is in world coordination
+    static Spectrum delta_sampling_tr(const T &derived, const Point3f &p,
+                                      const Vector3f &d, float invMaxDensity,
+                                      float sigma_t, float tMax,
+                                      Sampler &sampler) {
+        float tr = 1.0f;
+        float t = 0;
+        Point3f origin = derived.toLocal(p);
+        derived.toSampleCoor(origin);
+        Vector3f dir = derived.toLocal(d);
+        while (true) {
+            t -= fm::log(1 - sampler.next1D()) * invMaxDensity / sigma_t;
+            if (t >= tMax) {
+                break;
+            }
+            float density = derived.Density(origin + t * dir);
+            tr *= 1 - std::max(0.0f, density * invMaxDensity);
+        }
+        return Spectrum(tr);
+    }
+
+    static MediumIntersection delta_sampling_forward(
+        const T &derived, const Ray &ray, const Spectrum &sigma_s,
+        float invMaxDensity, float sigma_t, Sampler &sampler) {
+        MediumIntersection mit;
+        float t = ray.tNear;
+
+        Point3f origin = derived.toLocal(ray.origin);
+        derived.toSampleCoor(origin);
+        Vector3f localDir = derived.toLocal(ray.direction);
+
+        while (true) {
+            t -= fm::log(1 - sampler.next1D()) * invMaxDensity / sigma_t;
+            if (t >= ray.tFar) {
+                mit.weight = Spectrum(1.0f);
+                mit.t = ray.tFar;
+                mit.position = ray.at(ray.tFar);
+                break;
+            }
+            if (derived.Density(ray.origin + t * localDir) * invMaxDensity >
+                sampler.next1D()) {
+                mit.weight = sigma_s / sigma_t;
+                mit.t = t;
+                mit.position = ray.at(t);
+                break;
+            }
+        }
+        return mit;
+    }
 };
 
 class GridDensityMedium : public GridMedium {
@@ -124,6 +183,6 @@ public:
                                 const Vector3f &wi) override;
 
 private:
-    openvdb::GridBase::Ptr densityGrids_;
+    openvdb::FloatGrid::Ptr densityGrids_;
     openvdb::CoordBBox bbox_;
 };

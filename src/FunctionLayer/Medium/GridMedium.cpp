@@ -3,8 +3,10 @@
 #include <openvdb/Grid.h>
 #include <openvdb/Types.h>
 #include <openvdb/openvdb.h>
+#include <openvdb/tools/ValueTransformer.h>
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -17,6 +19,20 @@
 #include "ResourceLayer/Factory.h"
 #include "ResourceLayer/FileUtil.h"
 #include "ResourceLayer/JsonUtil.h"
+
+inline float linearLerp(float a0, float a1, float d) {
+    return a0 + (a1 - a0) * d;
+}
+
+inline float triLerp(float val[2][2][2], float dx, float dy, float dz) {
+    float y0z0 = linearLerp(val[0][0][0], val[1][0][0], dx);
+    float y0z1 = linearLerp(val[0][0][1], val[1][0][1], dx);
+    float y1z0 = linearLerp(val[0][1][0], val[1][1][0], dx);
+    float y1z1 = linearLerp(val[0][1][1], val[1][1][1], dx);
+    float z0 = linearLerp(y0z0, y1z0, dy);
+    float z1 = linearLerp(y0z1, y1z1, dy);
+    return linearLerp(z0, z1, dz);
+}
 
 GridDensityMedium::GridDensityMedium(const Json &json) : GridMedium(json) {
     float g = fetchRequired<float>(json, "g");
@@ -44,9 +60,7 @@ GridDensityMedium::GridDensityMedium(const Json &json) : GridMedium(json) {
     density_ = std::move(data);
     float max_density =
         *std::max_element(density_.get(), density_.get() + nx * ny * nz);
-    if (max_density == 0) {
-        max_density = 0.0001;
-    }
+    max_density = std::max(max_density, 1e-6f);
     invMaxDensity_ = 1.0f / max_density;
 
     sigma_a_ = fetchRequired<Spectrum>(json, "sigma_a");
@@ -62,43 +76,36 @@ GridDensityMedium::GridDensityMedium(const Json &json) : GridMedium(json) {
     }
 }
 
-float GridDensityMedium::triLearp(const Point3f &pGrid) const {
-    int fx = std::floor(pGrid[0]), fy = std::floor(pGrid[1]),
-        fz = std::floor(pGrid[2]);
-    int cx = fx + 1, cy = fy + 1, cz = fz + 1;
-    float dx = pGrid[0] - fx, dy = pGrid[1] - fy, dz = pGrid[2] - fz;
-    float y0z0 =
-        dx * queryDensity(cx, fy, fz) + (1 - dx) * queryDensity(fx, fy, fz);
-    float y0z1 =
-        dx * queryDensity(cx, fy, cz) + (1 - dx) * queryDensity(fx, fy, cz);
-    float y1z0 =
-        dx * queryDensity(cx, cy, fz) + (1 - dx) * queryDensity(fx, cy, fz);
-    float y1z1 =
-        dx * queryDensity(cx, cy, cz) + (1 - dx) * queryDensity(fx, cy, cz);
-    float z0 = dy * y1z0 + (1 - dy) * y0z0;
-    float z1 = dy * y1z1 + (1 - dy) * y0z1;
-    float val = dz * z1 + (1 - dz) * z0;
-    return val;
-}
-
 // p in [0, 1]^3
 float GridDensityMedium::Density(const Point3f &p) const {
     Point3f cp;
     for (int i = 0; i < 3; ++i) {
         cp[i] = std::max(std::min(1 - EPSILON, p[i]), EPSILON);
     }
-    const Point3f pGrid = Point3f(cp[0] * nx_, cp[1] * ny_, cp[2] * nz_);
-    return triLearp(pGrid);
+    float px = cp[0] * nx_, py = cp[1] * ny_, pz = cp[2] * nz_;
+    int fx = std::floor(px), fy = std::floor(py), fz = std::floor(pz);
+    float dx = px - fx, dy = py - fy, dz = pz - fz;
+    float val[2][2][2];
+    float *data = density_.get();
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            for (int k = 0; k < 2; ++k) {
+                int idx = fx + i, idy = fy + j, idz = fz + k;
+                val[i][j][k] = data[idx * nynz_ + idy * nz_ + idz];
+            }
+        }
+    }
+    return triLerp(val, dx, dy, dz);
 }
 
 MediumIntersection GridDensityMedium::sample_forward(const Ray &ray,
-                                                     Sampler &sampler) {
+                                                     Sampler &sampler) const {
     return DeltaSamplingAlg<GridDensityMedium>::delta_sampling_forward(
         *this, ray, sigma_s_, invMaxDensity_, sigma_t_, sampler);
 }
 
 Spectrum GridDensityMedium::Tr(const Point3f &p, const Vector3f &dir,
-                               float tMax, Sampler &sampler) {
+                               float tMax, Sampler &sampler) const {
     return DeltaSamplingAlg<GridDensityMedium>::delta_sampling_tr(
         *this, p, dir, invMaxDensity_, sigma_t_, tMax, sampler);
 }
@@ -106,35 +113,72 @@ Spectrum GridDensityMedium::Tr(const Point3f &p, const Vector3f &dir,
 REGISTER_CLASS(GridDensityMedium, "gridDensityMedium")
 
 VDBGridMedium::VDBGridMedium(const Json &json) : GridMedium(json) {
+    float g = fetchRequired<float>(json, "g");
+    phase_ = std::make_unique<PhaseHG>(g);
+
     std::string vdbPath = fetchRequired<std::string>(json, "file");
     vdbPath = FileUtil::getFullPath(vdbPath);
     openvdb::io::File file(vdbPath);
     file.open();
     openvdb::GridBase::Ptr pgrid = file.readGrid("density");
     densityGrids_ = openvdb::gridPtrCast<openvdb::FloatGrid>(pgrid);
-    densityGrids_->getConstAccessor();
     file.close();
-    bbox_ = densityGrids_->evalActiveVoxelBoundingBox();
+    auto bbox = densityGrids_->evalActiveVoxelBoundingBox();
+    auto bboxMin = bbox.min().asVec3i(), bboxMax = bbox.max().asVec3i();
+    for (int i = 0; i < 3; ++i) {
+        bboxMin_[i] = bboxMin[i];
+        bboxMax_[i] = bboxMax[i];
+        bboxLen_[i] = bboxMax[i] - bboxMin[i];
+    }
+    float maxDensity = 1e-6f;
+    openvdb::tools::foreach (
+        densityGrids_->beginValueOn(),
+        [&](const openvdb::FloatGrid::ValueOnIter &iter) {
+            maxDensity = std::max(maxDensity, iter.getValue());
+        },
+        false);
+    invMaxDensity_ = 1.0f / maxDensity;
+
+    sigma_a_ = fetchRequired<Spectrum>(json, "sigma_a");
+    sigma_s_ = fetchRequired<Spectrum>(json, "sigma_s");
+    sigma_t_ = sigma_a_[0] + sigma_s_[0];
 }
 
-Spectrum VDBGridMedium::Tr(const Point3f &p, const Vector3f &dir, float t,
-                           Sampler &sampler) {
-    return Spectrum(0.0f);
+float VDBGridMedium::Density(const Point3f &p) const {
+    float px = bboxMin_[0] + bboxLen_[0] * p[0];
+    float py = bboxMin_[1] + bboxLen_[1] * p[1];
+    float pz = bboxMin_[2] + bboxLen_[2] * p[2];
+    int fx = std::floor(px), fy = std::floor(py), fz = std::floor(pz);
+    float dx = px - fx, dy = py - fy, dz = pz - fz;
+    float val[2][2][2];
+    auto accessor = densityGrids_->getConstAccessor();
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            for (int k = 0; k < 2; ++k) {
+                openvdb::Coord coord(fx + i, fy + j, fz + k);
+                val[i][j][k] = 100 * accessor.getValue(coord);
+            }
+        }
+    }
+    return triLerp(val, dx, dy, dz);
+}
+
+Spectrum VDBGridMedium::Tr(const Point3f &p, const Vector3f &dir, float tMax,
+                           Sampler &sampler) const {
+    return DeltaSamplingAlg<VDBGridMedium>::delta_sampling_tr(
+        *this, p, dir, invMaxDensity_, sigma_t_, tMax, sampler);
 }
 
 MediumIntersection VDBGridMedium::sample_forward(const Ray &ray,
-                                                 Sampler &sampler) {
-    return MediumIntersection();
+                                                 Sampler &sampler) const {
+    return DeltaSamplingAlg<VDBGridMedium>::delta_sampling_forward(
+        *this, ray, sigma_s_, invMaxDensity_, sigma_t_, sampler);
 }
 
 MediumInScatter VDBGridMedium::sample_scatter(const Point3f &p,
                                               const Vector3f &wo,
-                                              Sampler &sampler) {
-    return MediumInScatter();
-}
-
-float VDBGridMedium::scatter_phase(const Vector3f &wo, const Vector3f &wi) {
-    return 1.0f;
+                                              Sampler &sampler) const {
+    return phase_->sample_scatter(p, wo, sampler);
 }
 
 REGISTER_CLASS(VDBGridMedium, "vdbGridMedium")

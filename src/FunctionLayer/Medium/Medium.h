@@ -6,17 +6,32 @@
 #include "FunctionLayer/Sampler/Sampler.h"
 #include "FunctionLayer/Shape/Intersection.h"
 
+struct MediumInScatter {
+    Vector3f wi;
+    Spectrum weight;
+};
+
 class PhaseFunction {
 public:
     virtual Vector3f sample(const Vector3f &wo, Sampler &sampler,
-                            float *pdf) = 0;
-    virtual float phase(const Vector3f &wo, const Vector3f &wi) = 0;
+                            float *pdf) const = 0;
+    virtual float phase(const Vector3f &wo, const Vector3f &wi) const = 0;
+    MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,
+                                   Sampler &sampler) const {
+        MediumInScatter mis;
+        float pdf = 1.0f;
+        mis.wi = sample(wo, sampler, &pdf);
+        float scale = phase(wo, mis.wi) / pdf;
+        mis.weight = Spectrum(scale);
+        return mis;
+    }
 };
 
 class PhaseHG : public PhaseFunction {
 public:
     explicit PhaseHG(float _g) : g(_g) {}
-    Vector3f sample(const Vector3f &wo, Sampler &sampler, float *pdf) {
+    Vector3f sample(const Vector3f &wo, Sampler &sampler,
+                    float *pdf) const override {
         // ref: pbrt
         // cos\theta = \frac{1}{2g}((\frac{1-g^2}{-2gx + g + 1})^2 - 1 - g^2)
         // sampling according to phase function
@@ -48,7 +63,7 @@ public:
         return wi;
     }
 
-    float phase(const Vector3f &wo, const Vector3f &wi) {
+    float phase(const Vector3f &wo, const Vector3f &wi) const override {
         float cos = dot(wo, wi);
         float g_sq = g * g;
         float denom = 1 + g_sq + 2 * g * cos;
@@ -59,17 +74,14 @@ private:
     float g;
 };
 
-struct MediumInScatter {
-    Vector3f wi;
-    Spectrum weight;
-};
-
 class Medium {
 public:
-    virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float t, Sampler &sampler) = 0;
+    virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float t,
+                        Sampler &sampler) const = 0;
     virtual MediumIntersection sample_forward(const Ray &ray,
-                                              Sampler &sampler) = 0;
+                                              Sampler &sampler) const = 0;
     virtual MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,
-                                           Sampler &sampler) = 0;
-    virtual float scatter_phase(const Vector3f &wo, const Vector3f &wi) = 0;
+                                           Sampler &sampler) const = 0;
+    virtual float scatter_phase(const Vector3f &wo,
+                                const Vector3f &wi) const = 0;
 };

@@ -135,26 +135,17 @@ public:
     }
     explicit GridDensityMedium(const Json &json);
 
-    float queryDensity(int i, int j, int k) const {
-        return density_.get()[i * nynz_ + j * nz_ + k];
-    }
-    float triLearp(const Point3f &pGrid) const;
     // p inside [0, 1]^3
     float Density(const Point3f &p) const;
     Spectrum Tr(const Point3f &p, const Vector3f &dir, float t,
-                Sampler &sampler) override;
+                Sampler &sampler) const override;
     MediumIntersection sample_forward(const Ray &ray,
-                                      Sampler &sampler) override;
+                                      Sampler &sampler) const override;
     MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,
-                                   Sampler &sampler) override {
-        MediumInScatter mis;
-        float pdf = 1.0f;
-        mis.wi = phase_->sample(wo, sampler, &pdf);
-        float scale = phase_->phase(wo, mis.wi) / pdf;
-        mis.weight = Spectrum(scale);
-        return mis;
+                                   Sampler &sampler) const override {
+        return phase_->sample_scatter(p, wo, sampler);
     }
-    float scatter_phase(const Vector3f &wo, const Vector3f &wi) override {
+    float scatter_phase(const Vector3f &wo, const Vector3f &wi) const override {
         return phase_->phase(wo, wi);
     }
 
@@ -173,16 +164,26 @@ class VDBGridMedium : public GridMedium {
 public:
     explicit VDBGridMedium(const Json &json);
 
-    virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float t,
-                        Sampler &sampler) override;
+    virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float tMax,
+                        Sampler &sampler) const override;
     virtual MediumIntersection sample_forward(const Ray &ray,
-                                              Sampler &sampler) override;
+                                              Sampler &sampler) const override;
     virtual MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,
-                                           Sampler &sampler) override;
+                                           Sampler &sampler) const override;
     virtual float scatter_phase(const Vector3f &wo,
-                                const Vector3f &wi) override;
+                                const Vector3f &wi) const override {
+        return phase_->phase(wo, wi);
+    }
+    float Density(const Point3f &p) const;
 
 private:
+    std::unique_ptr<PhaseFunction> phase_;
+
     openvdb::FloatGrid::Ptr densityGrids_;
-    openvdb::CoordBBox bbox_;
+    int bboxMin_[3], bboxMax_[3];
+    // 边界的voxel的中心点之间的距离
+    int bboxLen_[3];
+    Spectrum sigma_a_, sigma_s_;
+    float sigma_t_;
+    float invMaxDensity_;
 };

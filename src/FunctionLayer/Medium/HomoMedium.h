@@ -19,12 +19,12 @@ public:
           sigma_t_(sigma_a + sigma_s) {}
 
     virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float t,
-                        Sampler &sampler) override;
+                        Sampler &sampler) const override;
     virtual MediumIntersection sample_forward(const Ray &ray,
-                                              Sampler &sampler) override;
+                                              Sampler &sampler) const override;
     virtual MediumInScatter sample_scatter(const Point3f &p, const Vector3f &wo,
-                                           Sampler &sampler) override;
-    float scatter_phase(const Vector3f &wo, const Vector3f &wi) override;
+                                           Sampler &sampler) const override;
+    float scatter_phase(const Vector3f &wo, const Vector3f &wi) const override;
 
 private:
     std::unique_ptr<PhaseFunction> phase_;

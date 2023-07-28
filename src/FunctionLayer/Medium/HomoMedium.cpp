@@ -11,7 +11,7 @@
 #include "ResourceLayer/JsonUtil.h"
 
 Spectrum HomoMedium::Tr(const Point3f &p, const Vector3f &dir, float t,
-                        Sampler &sampler) {
+                        Sampler &sampler) const {
     Spectrum tr(0.0);
     for (int i = 0; i < Spectrum::cntChannel(); ++i) {
         tr[i] = fm::exp(-t * sigma_t_[i]);
@@ -20,7 +20,7 @@ Spectrum HomoMedium::Tr(const Point3f &p, const Vector3f &dir, float t,
 }
 
 MediumIntersection HomoMedium::sample_forward(const Ray &ray,
-                                              Sampler &sampler) {
+                                              Sampler &sampler) const {
     MediumIntersection mit;
     int channelIdx = int((sampler.next1D() - 1e-5) * Spectrum::cntChannel());
     float c = sigma_t_[channelIdx];
@@ -53,7 +53,7 @@ MediumIntersection HomoMedium::sample_forward(const Ray &ray,
 }
 
 MediumInScatter HomoMedium::sample_scatter(const Point3f &p, const Vector3f &wo,
-                                           Sampler &sampler) {
+                                           Sampler &sampler) const {
     MediumInScatter mis;
     float pdf = 1.0f;
     mis.wi = phase_->sample(wo, sampler, &pdf);
@@ -63,7 +63,7 @@ MediumInScatter HomoMedium::sample_scatter(const Point3f &p, const Vector3f &wo,
     return mis;
 }
 
-float HomoMedium::scatter_phase(const Vector3f &wo, const Vector3f &wi) {
+float HomoMedium::scatter_phase(const Vector3f &wo, const Vector3f &wi) const {
     return phase_->phase(wo, wi);
 }
 

@@ -156,7 +156,7 @@ float VDBGridMedium::Density(const Point3f &p) const {
         for (int j = 0; j < 2; ++j) {
             for (int k = 0; k < 2; ++k) {
                 openvdb::Coord coord(fx + i, fy + j, fz + k);
-                val[i][j][k] = 100 * accessor.getValue(coord);
+                val[i][j][k] = accessor.getValue(coord);
             }
         }
     }

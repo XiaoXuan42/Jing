@@ -59,7 +59,7 @@ struct DeltaSamplingAlg {
         float t = 0;
         Point3f origin = derived.toLocal(p);
         derived.toSampleCoor(origin);
-        Vector3f dir = derived.toLocal(d);
+        Vector3f dir = normalize(derived.toLocal(d));
         while (true) {
             t -= fm::log(1 - sampler.next1D()) * invMaxDensity / sigma_t;
             if (t >= tMax) {
@@ -79,7 +79,7 @@ struct DeltaSamplingAlg {
 
         Point3f origin = derived.toLocal(ray.origin);
         derived.toSampleCoor(origin);
-        Vector3f localDir = derived.toLocal(ray.direction);
+        Vector3f dir = normalize(derived.toLocal(ray.direction));
 
         while (true) {
             t -= fm::log(1 - sampler.next1D()) * invMaxDensity / sigma_t;
@@ -89,7 +89,7 @@ struct DeltaSamplingAlg {
                 mit.position = ray.at(ray.tFar);
                 break;
             }
-            if (derived.Density(ray.origin + t * localDir) * invMaxDensity >
+            if (derived.Density(origin + t * dir) * invMaxDensity >
                 sampler.next1D()) {
                 mit.weight = sigma_s / sigma_t;
                 mit.t = t;

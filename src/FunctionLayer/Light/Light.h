@@ -22,7 +22,7 @@ class Light {
 public:
     Light() = delete;
 
-    Light(const Json &json) {}
+    explicit Light(const Json &json) {}
 
     //* 当一条光线击中光源时，返回光源沿光线方向释放的radiance
     //* intersection是光线和光源的交点

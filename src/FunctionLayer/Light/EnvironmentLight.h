@@ -9,7 +9,7 @@ class EnvironmentLight : public InfiniteLight {
 public:
     EnvironmentLight() = delete;
 
-    EnvironmentLight(const Json &json);
+    explicit EnvironmentLight(const Json &json);
 
     Spectrum evaluateEmission(const Ray &ray) const override;
 

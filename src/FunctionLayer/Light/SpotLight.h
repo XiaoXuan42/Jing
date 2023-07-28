@@ -6,7 +6,7 @@ class SpotLight : public Light {
 public:
     SpotLight() = delete;
 
-    SpotLight(const Json &json);
+    explicit SpotLight(const Json &json);
 
     virtual Spectrum evaluateEmission(const SurfaceIntersection &intersection,
                                       const Vector3f &wo) const;
@@ -15,6 +15,6 @@ public:
                                      const Vector2f &sample) const;
 
 private:
-    Point3f position;
-    Spectrum energy;
+    Point3f position_;
+    Spectrum energy_;
 };

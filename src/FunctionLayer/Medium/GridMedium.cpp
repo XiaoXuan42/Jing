@@ -20,20 +20,6 @@
 #include "ResourceLayer/FileUtil.h"
 #include "ResourceLayer/JsonUtil.h"
 
-inline float linearLerp(float a0, float a1, float d) {
-    return a0 + (a1 - a0) * d;
-}
-
-inline float triLerp(float val[2][2][2], float dx, float dy, float dz) {
-    float y0z0 = linearLerp(val[0][0][0], val[1][0][0], dx);
-    float y0z1 = linearLerp(val[0][0][1], val[1][0][1], dx);
-    float y1z0 = linearLerp(val[0][1][0], val[1][1][0], dx);
-    float y1z1 = linearLerp(val[0][1][1], val[1][1][1], dx);
-    float z0 = linearLerp(y0z0, y1z0, dy);
-    float z1 = linearLerp(y0z1, y1z1, dy);
-    return linearLerp(z0, z1, dz);
-}
-
 GridDensityMedium::GridDensityMedium(const Json &json) : GridMedium(json) {
     float g = fetchRequired<float>(json, "g");
     phase_ = std::make_unique<PhaseHG>(g);
@@ -116,25 +102,46 @@ VDBGridMedium::VDBGridMedium(const Json &json) : GridMedium(json) {
     float g = fetchRequired<float>(json, "g");
     phase_ = std::make_unique<PhaseHG>(g);
 
+    densityScale_ = fetchOptional(json, "densityScale", 1.0f);
+
     std::string vdbPath = fetchRequired<std::string>(json, "file");
     vdbPath = FileUtil::getFullPath(vdbPath);
     openvdb::io::File file(vdbPath);
     file.open();
     openvdb::GridBase::Ptr pgrid = file.readGrid("density");
     densityGrids_ = openvdb::gridPtrCast<openvdb::FloatGrid>(pgrid);
-    file.close();
     auto bbox = densityGrids_->evalActiveVoxelBoundingBox();
     auto bboxMin = bbox.min().asVec3i(), bboxMax = bbox.max().asVec3i();
     for (int i = 0; i < 3; ++i) {
         bboxMin_[i] = bboxMin[i];
         bboxMax_[i] = bboxMax[i];
+    }
+
+    if (file.hasGrid("temperature")) {
+        openvdb::GridBase::Ptr tgrid = file.readGrid("temperature");
+        temperatureGrids_ = openvdb::gridPtrCast<openvdb::FloatGrid>(tgrid);
+        bbox = temperatureGrids_->evalActiveVoxelBoundingBox();
+        bboxMin = bbox.min().asVec3i();
+        bboxMax = bbox.max().asVec3i();
+        for (int i = 0; i < 3; ++i) {
+            bboxMin_[i] = std::min(bboxMin[i], bboxMin_[i]);
+            bboxMax_[i] = std::max(bboxMax[i], bboxMax_[i]);
+        }
+    }
+    temperatureScale_ = fetchOptional(json, "temperatureScale", Spectrum(1.0f));
+    temperatureBias_ = fetchOptional(json, "temperatureBias", Spectrum(0.0f));
+
+    for (int i = 0; i < 3; ++i) {
         bboxLen_[i] = bboxMax[i] - bboxMin[i];
     }
+
+    file.close();
+
     float maxDensity = 1e-6f;
     openvdb::tools::foreach (
         densityGrids_->beginValueOn(),
         [&](const openvdb::FloatGrid::ValueOnIter &iter) {
-            maxDensity = std::max(maxDensity, iter.getValue());
+            maxDensity = std::max(maxDensity, densityScale_ * iter.getValue());
         },
         false);
     invMaxDensity_ = 1.0f / maxDensity;
@@ -142,6 +149,16 @@ VDBGridMedium::VDBGridMedium(const Json &json) : GridMedium(json) {
     sigma_a_ = fetchRequired<Spectrum>(json, "sigma_a");
     sigma_s_ = fetchRequired<Spectrum>(json, "sigma_s");
     sigma_t_ = sigma_a_[0] + sigma_s_[0];
+}
+
+Spectrum VDBGridMedium::Emission(const Point3f &p, const Vector3f &dir) const {
+    if (!temperatureGrids_) {
+        return Spectrum(0.0f);
+    }
+    Point3f sampleP = toLocal(p);
+    toSampleCoor(sampleP);
+    float t = sample_grids(temperatureGrids_, sampleP);
+    return temperatureScale_ * (Spectrum::blackBody(t) - temperatureBias_);
 }
 
 float VDBGridMedium::Density(const Point3f &p) const {
@@ -160,7 +177,7 @@ float VDBGridMedium::Density(const Point3f &p) const {
             }
         }
     }
-    return triLerp(val, dx, dy, dz);
+    return densityScale_ * triLerp(val, dx, dy, dz);
 }
 
 Spectrum VDBGridMedium::Tr(const Point3f &p, const Vector3f &dir, float tMax,

@@ -7,6 +7,7 @@
 #include "CoreLayer/Math/Transform.h"
 #include "FunctionLayer/Shape/Intersection.h"
 #include "Medium.h"
+#include "MediumPhase.h"
 #include "ResourceLayer/JsonUtil.h"
 
 // 和Cube一样，grid默认是中心位于(0, 0,
@@ -43,6 +44,20 @@ public:
     float Density(const Point3f &p) const { return 0.0f; }
 
 protected:
+    static float linearLerp(float a0, float a1, float d) {
+        return a0 + (a1 - a0) * d;
+    }
+
+    static float triLerp(float val[2][2][2], float dx, float dy, float dz) {
+        float y0z0 = linearLerp(val[0][0][0], val[1][0][0], dx);
+        float y0z1 = linearLerp(val[0][0][1], val[1][0][1], dx);
+        float y1z0 = linearLerp(val[0][1][0], val[1][1][0], dx);
+        float y1z1 = linearLerp(val[0][1][1], val[1][1][1], dx);
+        float z0 = linearLerp(y0z0, y1z0, dy);
+        float z1 = linearLerp(y0z1, y1z1, dy);
+        return linearLerp(z0, z1, dz);
+    }
+
     Transform transform_;
 };
 
@@ -135,6 +150,10 @@ public:
     }
     explicit GridDensityMedium(const Json &json);
 
+    Spectrum Emission(const Point3f &p, const Vector3f &dir) const override {
+        return Spectrum(0.0f);
+    }
+
     // p inside [0, 1]^3
     float Density(const Point3f &p) const;
     Spectrum Tr(const Point3f &p, const Vector3f &dir, float t,
@@ -164,6 +183,7 @@ class VDBGridMedium : public GridMedium {
 public:
     explicit VDBGridMedium(const Json &json);
 
+    Spectrum Emission(const Point3f &p, const Vector3f &dir) const override;
     virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float tMax,
                         Sampler &sampler) const override;
     virtual MediumIntersection sample_forward(const Ray &ray,
@@ -177,13 +197,37 @@ public:
     float Density(const Point3f &p) const;
 
 private:
+    float sample_grids(const openvdb::FloatGrid::Ptr &grids,
+                       const Point3f &p) const {
+        float px = bboxMin_[0] + bboxLen_[0] * p[0];
+        float py = bboxMin_[1] + bboxLen_[1] * p[1];
+        float pz = bboxMin_[2] + bboxLen_[2] * p[2];
+        int fx = std::floor(px), fy = std::floor(py), fz = std::floor(pz);
+        float dx = px - fx, dy = py - fy, dz = pz - fz;
+        float val[2][2][2];
+        auto accessor = grids->getConstAccessor();
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 2; ++j) {
+                for (int k = 0; k < 2; ++k) {
+                    openvdb::Coord coord(fx + i, fy + j, fz + k);
+                    val[i][j][k] = accessor.getValue(coord);
+                }
+            }
+        }
+        return triLerp(val, dx, dy, dz);
+    }
+
     std::unique_ptr<PhaseFunction> phase_;
 
     openvdb::FloatGrid::Ptr densityGrids_;
+    openvdb::FloatGrid::Ptr temperatureGrids_;
     int bboxMin_[3], bboxMax_[3];
     // 边界的voxel的中心点之间的距离
     int bboxLen_[3];
     Spectrum sigma_a_, sigma_s_;
     float sigma_t_;
     float invMaxDensity_;
+    float densityScale_;
+
+    Spectrum temperatureScale_, temperatureBias_;
 };

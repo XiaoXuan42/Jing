@@ -147,6 +147,8 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
 
             specularBounce = bsdf_sample_result.type == BSDFType::Specular;
         } else {
+            // emission
+            L += throughput * medium->Emission(mit.position, wo);
             // scatter
             MediumInScatter mis =
                 medium->sample_scatter(mit.position, wo, *sampler);

@@ -5,6 +5,7 @@
 #include "CoreLayer/ColorSpace/Spectrum.h"
 #include "CoreLayer/Math/Geometry.h"
 #include "FunctionLayer/Medium/Medium.h"
+#include "FunctionLayer/Medium/MediumPhase.h"
 #include "FunctionLayer/Shape/Intersection.h"
 #include "ResourceLayer/JsonUtil.h"
 
@@ -18,6 +19,10 @@ public:
           sigma_s_(sigma_s),
           sigma_t_(sigma_a + sigma_s) {}
 
+    virtual Spectrum Emission(const Point3f &p,
+                              const Vector3f &dir) const override {
+        return Spectrum(0.0f);
+    }
     virtual Spectrum Tr(const Point3f &p, const Vector3f &dir, float t,
                         Sampler &sampler) const override;
     virtual MediumIntersection sample_forward(const Ray &ray,

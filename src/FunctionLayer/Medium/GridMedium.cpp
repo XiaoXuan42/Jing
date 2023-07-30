@@ -128,8 +128,10 @@ VDBGridMedium::VDBGridMedium(const Json &json) : GridMedium(json) {
             bboxMax_[i] = std::max(bboxMax[i], bboxMax_[i]);
         }
     }
-    temperatureScale_ = fetchOptional(json, "temperatureScale", Spectrum(1.0f));
-    temperatureBias_ = fetchOptional(json, "temperatureBias", Spectrum(0.0f));
+    emissionScale_ = fetchOptional(json, "emissionScale", Spectrum(1.0f));
+    emissionBias_ = fetchOptional(json, "emissionBias", Spectrum(0.0f));
+    temperatureScale_ = fetchOptional(json, "temperatureScale", 1.0f);
+    temperatureBias_ = fetchOptional(json, "temperatureBias", 0.0f);
 
     for (int i = 0; i < 3; ++i) {
         bboxLen_[i] = bboxMax[i] - bboxMin[i];
@@ -158,7 +160,9 @@ Spectrum VDBGridMedium::Emission(const Point3f &p, const Vector3f &dir) const {
     Point3f sampleP = toLocal(p);
     toSampleCoor(sampleP);
     float t = sample_grids(temperatureGrids_, sampleP);
-    return temperatureScale_ * (Spectrum::blackBody(t) - temperatureBias_);
+    t = temperatureBias_ + t * temperatureScale_;
+    Spectrum e = Spectrum::blackBody(t);
+    return emissionScale_ * e + emissionBias_;
 }
 
 float VDBGridMedium::Density(const Point3f &p) const {

@@ -1943,6 +1943,10 @@ def blackbody_to_rgb(temperatures):
 
 
 if __name__ == "__main__":
-    rgbs = blackbody_to_rgb(list(range(100, 2001, 100)))
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--max", type=int, required=True)
+    res = parser.parse_args()
+    rgbs = blackbody_to_rgb(list(range(100, res.max+1, 100)))
     for rgb in rgbs:
         print(f"{{{rgb[0]},{rgb[1]},{rgb[2]}}},", end='')

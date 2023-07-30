@@ -229,5 +229,6 @@ private:
     float invMaxDensity_;
     float densityScale_;
 
-    Spectrum temperatureScale_, temperatureBias_;
+    float temperatureScale_, temperatureBias_;
+    Spectrum emissionScale_, emissionBias_;
 };

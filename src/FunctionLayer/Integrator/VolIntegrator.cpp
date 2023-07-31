@@ -131,7 +131,7 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
         }
 
         // ruassian roulette
-        if (depth > 2 && sampler->next1D() > roulette_) {
+        if (depth > 5 && sampler->next1D() > roulette_) {
             break;
         }
         throughput /= roulette_;

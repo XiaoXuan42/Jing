@@ -102,8 +102,6 @@ VDBGridMedium::VDBGridMedium(const Json &json) : GridMedium(json) {
     float g = fetchRequired<float>(json, "g");
     phase_ = std::make_unique<PhaseHG>(g);
 
-    densityScale_ = fetchOptional(json, "densityScale", 1.0f);
-
     std::string vdbPath = fetchRequired<std::string>(json, "file");
     vdbPath = FileUtil::getFullPath(vdbPath);
     openvdb::io::File file(vdbPath);
@@ -143,7 +141,7 @@ VDBGridMedium::VDBGridMedium(const Json &json) : GridMedium(json) {
     openvdb::tools::foreach (
         densityGrids_->beginValueOn(),
         [&](const openvdb::FloatGrid::ValueOnIter &iter) {
-            maxDensity = std::max(maxDensity, densityScale_ * iter.getValue());
+            maxDensity = std::max(maxDensity, iter.getValue());
         },
         false);
     invMaxDensity_ = 1.0f / maxDensity;
@@ -181,7 +179,7 @@ float VDBGridMedium::Density(const Point3f &p) const {
             }
         }
     }
-    return densityScale_ * triLerp(val, dx, dy, dz);
+    return triLerp(val, dx, dy, dz);
 }
 
 Spectrum VDBGridMedium::Tr(const Point3f &p, const Vector3f &dir, float tMax,

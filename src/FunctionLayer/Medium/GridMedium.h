@@ -227,7 +227,6 @@ private:
     Spectrum sigma_a_, sigma_s_;
     float sigma_t_;
     float invMaxDensity_;
-    float densityScale_;
 
     float temperatureScale_, temperatureBias_;
     Spectrum emissionScale_, emissionBias_;

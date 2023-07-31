@@ -15,4 +15,5 @@ public:
     }
 
     virtual bool is_transparent() const override { return true; }
+    virtual bool is_empty() const override { return true; }
 };

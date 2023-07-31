@@ -25,6 +25,7 @@ public:
                                 Vector3f *bitangent) const;
 
     virtual bool is_transparent() const { return false; }
+    virtual bool is_empty() const { return false; }
 
 protected:
     std::shared_ptr<NormalTexture> normalMap;

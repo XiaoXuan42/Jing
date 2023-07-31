@@ -50,6 +50,8 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
         SurfaceIntersection sit = itsOpt.value();
         its = sit;
 
+        // depth >
+        // 0且不是specular的时候，光源的贡献在上一轮计算直接光照的时候已经计算过了
         if (depth == 0 || specularBounce) {
             auto light = sit.shape->light;
             if (light) {
@@ -61,7 +63,6 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
             }
         }
 
-        ++depth;
         if (depth >= maxDepth) {
             break;
         }
@@ -130,11 +131,15 @@ Spectrum VolIntegrator::li(Ray &ray, const Scene &scene,
             }
         }
 
-        // ruassian roulette
-        if (depth > 5 && sampler->next1D() > roulette_) {
-            break;
+        if (!hit || (hit && !sit.shape->material->is_empty())) {
+            // 当还是处在介质中，或者击中的不是empty材质的时候，将深度加1
+            depth += 1;
+            // ruassian roulette
+            if (depth > 2 && sampler->next1D() > roulette_) {
+                break;
+            }
+            throughput /= roulette_;
         }
-        throughput /= roulette_;
 
         // 下一步光线的方向
         if (hit) {

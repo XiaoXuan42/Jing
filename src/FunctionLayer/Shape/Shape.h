@@ -18,7 +18,7 @@ class Shape : public Transformable {
 public:
     Shape() = default;
 
-    Shape(const Json &json);
+    explicit Shape(const Json &json);
 
     virtual RTCGeometry getEmbreeGeometry(RTCDevice device) const;
 
